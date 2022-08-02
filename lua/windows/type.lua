@@ -1,0 +1,8 @@
+---@class win.WinResizeData
+---@field win win.Window
+---@field initial_width?  integer
+---@field initial_height? integer
+---@field final_width?    integer
+---@field final_height?   integer
+---@field delta_width?    integer The delta between initial and final widths.
+---@field delta_height?   integer The delta between initial and final heights.
