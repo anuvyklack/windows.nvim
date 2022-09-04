@@ -1,6 +1,5 @@
 local util = require('windows.util')
 local animation_is_available, easing = pcall(require, 'animation.easing')
-local default_easing = 'in_out_sine'
 local initialized = false
 local mt = {}
 
@@ -18,6 +17,7 @@ local config = {
    animation = {
       duration = 300,
       fps = 30,
+      easing = 'in_out_sine' ---@diagnostic disable-line
    }
 }
 
@@ -33,7 +33,7 @@ function mt:__call(input)
       if not config.animation.easing
          or type(config.animation.easing) == 'string'
       then
-         local name = config.animation.easing or default_easing
+         local name = config.animation.easing
          config.animation.easing = easing[name]
       end
    else
