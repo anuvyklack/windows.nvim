@@ -34,7 +34,10 @@ local setup_layout_co
 
 function M.enable_auto_width()
    autocmd('BufWinEnter', { group = augroup, callback = function(ctx)
-      if Window(0):is_floating() then return end
+      if vim.fn.getcmdwintype() ~= '' then
+         setup_layout_co = nil
+         return
+      end
       curbufnr = ctx.buf
 
       if setup_layout_co then
