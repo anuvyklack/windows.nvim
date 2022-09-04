@@ -7,30 +7,17 @@ local augroup = vim.api.nvim_create_augroup('windows.auto-width', {})
 local command = vim.api.nvim_create_user_command
 local M = {}
 
----Previous context: combination of window and buffer we have been in.
----@type { win: win.Window, buf: integer }
-local context = {}
-
 local curbufnr ---@type integer | nil
 local curwin ---@type win.Window | nil
-local prevwin ---@type win.Window | nil
 
----@type win.ResizeWindowsAnimated | nil
+---@type win.ResizeWindowsAnimated?
 local animation
 if config.animation then
    animation = require('windows.lib.ResizeWindowsAnimated'):new()
 end
 
-local autocmd_timer ---@type luv.Timer | nil
-local setup_layout_co ---@type thread | nil
-
 local function setup_layout()
-   if autocmd_timer then
-      autocmd_timer:close()
-      autocmd_timer = nil
-   end
-
-   local winsdata = calculate_layout(curwin, prevwin)
+   local winsdata = calculate_layout(curwin)
    if winsdata then
       if animation then
          animation:load(winsdata)
@@ -41,15 +28,17 @@ local function setup_layout()
    end
 end
 
-function M.enable_auto_width()
+---Coroutine wrap around "setup_layout" function.
+---@type function?
+local setup_layout_co
 
+function M.enable_auto_width()
    autocmd('BufWinEnter', { group = augroup, callback = function(ctx)
       if Window(0):is_floating() then return end
       curbufnr = ctx.buf
 
-      -- if setup_layout_co and coroutine.status(setup_layout_co) ~= 'dead' then
       if setup_layout_co then
-         coroutine.resume(setup_layout_co)
+         setup_layout_co()
          setup_layout_co = nil
       else
          setup_layout()
@@ -61,14 +50,13 @@ function M.enable_auto_width()
       if win:is_floating() or (win == curwin and ctx.buf == curbufnr) then
          return
       end
+      curwin = win
 
-      prevwin, curwin = curwin, win
-
-      setup_layout_co = coroutine.create(setup_layout)
+      setup_layout_co = coroutine.wrap(setup_layout)
 
       vim.defer_fn(function()
          if setup_layout_co then
-            coroutine.resume(setup_layout_co)
+            setup_layout_co()
             setup_layout_co = nil
          end
       end, 10)
@@ -77,9 +65,7 @@ function M.enable_auto_width()
    autocmd('TabLeave', { group = augroup, callback = function()
       if animation then animation:finish() end
       curwin = nil
-      prevwin = nil
    end })
-
 end
 
 function M.disable_auto_width()

@@ -5,7 +5,6 @@
 ---
 local Frame = require('windows.lib.Frame')
 local round = require('windows.util').round
-local list_extend = vim.list_extend
 local list_slice = vim.list_slice
 
 ---@param topFrame win.Frame
@@ -159,32 +158,24 @@ local function check_max_width(topFrame, curwin, curwin_path)
    end
 end
 
----@param curwin? win.Window
----@param prevwin? win.Window
----@return win.WinResizeData[] | nil
-local function calculate_layout(curwin, prevwin)
+---@param curwin win.Window
+---@return win.WinResizeData[]?
+local function calculate_layout(curwin)
    local topFrame = Frame() ---@type win.Frame
    if topFrame.type == 'leaf' then
       return
    end
    topFrame.new_width = vim.o.columns --[[@as integer]]
 
-   if curwin and curwin:is_valid()
-      and not curwin:is_floating()
-      and not curwin:is_ignored()
+   if curwin:is_valid() and not curwin:is_floating() and not curwin:is_ignored()
    then
-      local curwin_path = topFrame:find_window(curwin) --[[@as integer[] ]]
+      local curwin_path = topFrame:find_window(curwin)
 
       if not check_max_width(topFrame, curwin, curwin_path) then
          calculate_layout_recursively(topFrame, curwin, curwin_path)
       end
-   elseif prevwin and prevwin:is_valid()
-      and not prevwin:is_floating()
-      and not prevwin:is_ignored()
-   then
-      topFrame:equalize_windows_widths()
    else
-      return
+      topFrame:equalize_windows_widths()
    end
 
    local output = {} ---@type win.WinResizeData[]

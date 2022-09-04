@@ -225,7 +225,7 @@ end
 ---Return the list of indexes of nested frames, follow which you can find the
 ---window "leaf" frame.
 ---@param win win.Window
----@return integer[] | nil path
+---@return integer[] path
 function Frame:find_window(win)
    if self.type == 'leaf' then
       if self.win == win then

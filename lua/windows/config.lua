@@ -17,7 +17,7 @@ local config = {
    },
    animation = {
       duration = 300,
-      fps = 40,
+      fps = 30,
    }
 }
 
