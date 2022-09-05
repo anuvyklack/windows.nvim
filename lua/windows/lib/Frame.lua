@@ -12,6 +12,7 @@ local list_extend = vim.list_extend
 ---@field win win.Window
 ---@field new_width integer
 ---@field _fixed_width boolean
+---@field _curwin_frame boolean
 local Frame = class('win.Frame')
 
 function Frame:initialize(layout, parent)
@@ -78,41 +79,40 @@ function Frame:_get_longest_row_contains_target_window(win)
    end
 end
 
----Return `true` if width of the frame should not be changed because of the
----'winfixwidth' option.
----@return boolean
-function Frame:is_fixed_width()
-   if self._fixed_width then
-      return self._fixed_width
-   elseif self.type == 'leaf' then
+function Frame:mark_fixed_width()
+   if self._fixed_width ~= nil then return end
+   if self.type == 'leaf' then
       if self.win:is_ignored() then
          self._fixed_width = true
       else
          -- Frame with one window: fixed width if 'winfixwidth' set.
          self._fixed_width = self.win:get_option('winfixwidth')
       end
-      return self._fixed_width
    elseif self.type == 'row' then
       --  The frame is fixed width if all of the frames in the row are fixed width.
+      self._fixed_width = true
       for _, frame in ipairs(self.children) do
-         if not frame:is_fixed_width() then
+         frame:mark_fixed_width()
+         if not frame._fixed_width then
             self._fixed_width = false
-            return false
          end
-         self._fixed_width = true
-         return true
       end
    else -- self.type == 'col'
       --  The frame is fixed width if one of the frames in the column is fixed width.
+      self._fixed_width = false
       for _, frame in ipairs(self.children) do
-         if frame:is_fixed_width() then
+         frame:mark_fixed_width()
+         if frame._fixed_width then
             self._fixed_width = true
-            return true
          end
-         self._fixed_width = false
-         return false
       end
    end
+end
+
+---@return boolean
+function Frame:is_fixed_width()
+   assert(self._fixed_width ~= nil, 'Need to call Frame:mark_fixed_width() method first')
+   return self._fixed_width
 end
 
 ---Return the width of the frame.
@@ -225,40 +225,68 @@ end
 ---Return the list of indexes of nested frames, follow which you can find the
 ---window "leaf" frame.
 ---@param win win.Window
+---@return win.Frame leaf leaf-type frame with sought-for window
 ---@return integer[] path
 function Frame:find_window(win)
    if self.type == 'leaf' then
       if self.win == win then
-         return {}
+         return self, {}
       end
    else
       for i, frame in ipairs(self.children) do
-         local path = frame:find_window(win)
-         if path then
+         local leaf, path = frame:find_window(win)
+         if leaf then
             table.insert(path, 1, i)
-            return path
+            return leaf, path
          end
       end
+   end ---@diagnostic disable-line
+end
+
+---Mark all nested frames that contain passed window. Whether the frame is
+---marked, can be checked with `is_curwin` method.
+---@param win? win.Window
+function Frame:set_curwin(win)
+   win = win or Window()
+   local frame = self:find_window(win)
+   while frame do
+      frame._curwin_frame = true
+      frame = frame.parent
    end
+end
+
+---Return `true` if the frame containes "current" window.
+---@return boolean
+function Frame:is_curwin()
+   return self._curwin_frame or false
+end
+
+---@return win.Frame
+function Frame:get_curwinFrame()
+   for _, frame in ipairs(self.children) do
+      if frame:is_curwin() then
+         return frame
+      end
+   end
+   error('No curwinFrame found')
+end
+
+---Does frame have leaf-type frame among its children?
+function Frame:has_leaf()
+   if self.type == 'leaf' then
+      return false
+   end
+   for _, frame in ipairs(self.children) do
+      if frame.type == 'leaf' then
+         return true
+      end
+   end
+   return false
 end
 
 --------------------------------------------------------------------------------
 
-function Frame:_get_rightmost_frames()
-   if self.type == 'leaf' then
-      return { self }
-   elseif self.type == 'row' then
-      local frame = self.children[#self.children]
-      return frame:_get_rightmost_frames()
-   else -- self.type == 'col'
-      local output = {}
-      for _, frame in ipairs(self.children) do
-         list_extend(output, frame:_get_rightmost_frames())
-      end
-      return output
-   end
-end
-
+---Extract the list of windows suitable for auto-width resizing.
 ---@param add_last_in_first_row boolean? Add last frame in first row
 ---@return win.Frame[]
 function Frame:_get_leafs_for_auto_width_recursively(add_last_in_first_row)
@@ -269,18 +297,11 @@ function Frame:_get_leafs_for_auto_width_recursively(add_last_in_first_row)
 
       local N = #self.children
 
-      if self.children[N-1].type ~= 'leaf' then
-         local colFrame = self.children[N-1]
-         local colFrame_has_leafs = false
-         for i, f in ipairs(colFrame) do
-            if f.type == 'leaf' then
-               colFrame_has_leafs = true
-               break
-            end
-         end
-         if not colFrame_has_leafs then
-            add_last_in_first_row = true
-         end
+      if self.children[N-1].type ~= 'leaf'
+         and not self.children[N-1]:has_leaf()
+      then
+         -- self.children[N-1] should be colomn frame because we are in row frame
+         add_last_in_first_row = true
       end
 
       for i, frame in ipairs(self.children) do
@@ -300,19 +321,16 @@ function Frame:_get_leafs_for_auto_width_recursively(add_last_in_first_row)
       local has_leaf = false
       for _, frame in ipairs(self.children) do
          if frame.type == 'leaf' then
+            table.insert(output, frame)
             has_leaf = true
             break
          end
       end
 
-      local leaf_added = false
       for i, frame in ipairs(self.children) do
-         if frame.type == 'leaf' and not leaf_added then
-            table.insert(output, frame)
-            leaf_added = true
-         else
+         if frame.type ~= 'leaf' then
             list_extend(output, frame:_get_leafs_for_auto_width_recursively(
-                                   i == 1 and not has_leaf or false))
+               i == 1 and not has_leaf))
          end
       end
 
@@ -320,7 +338,6 @@ function Frame:_get_leafs_for_auto_width_recursively(add_last_in_first_row)
    end
 end
 
----Extract the list of windows suitable for auto-width resizing.
 ---@return win.Frame[]
 function Frame:get_leafs_for_auto_width()
    if self.type == 'leaf' then

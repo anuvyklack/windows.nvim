@@ -1,5 +1,5 @@
 local calculate_layout = require('windows.calculate-layout')
-local resize_windows = require('windows.resize-windows')
+local resize_windows = require('windows.lib.resize-windows')
 local Window = require('windows.lib.Window')
 local config = require('windows.config')
 local autocmd = vim.api.nvim_create_autocmd

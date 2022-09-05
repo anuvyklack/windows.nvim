@@ -1,8 +1,7 @@
 local Window = require('windows.lib.Window')
-local M = {}
 
 ---@param winsdata win.WinResizeData[]
-function M.resize_windows(winsdata)
+local function resize_windows(winsdata)
    local ignored_wins = {}
    -- local eadirection = vim.o.eadirection
 
@@ -39,4 +38,4 @@ function M.resize_windows(winsdata)
    end
 end
 
-return M
+return resize_windows
