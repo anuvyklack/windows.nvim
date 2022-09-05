@@ -185,20 +185,6 @@ local function calculate_layout(curwin)
          final_width = leaf.new_width
       }
    end
-
-   -- local t = {}
-   -- for i, leaf in ipairs(topFrame:get_leafs()) do
-   --    t[i] = string.format('%d : %d', leaf.win.id, leaf.new_width)
-   -- end
-   -- print(table.concat(t, ' | '))
-
-   -- print('Winsdata:')
-   -- local t = {}
-   -- for i, d in ipairs(output) do
-   --    t[i] = string.format('%d : %d', d.win.id, d.final_width)
-   -- end
-   -- print(table.concat(t, ' | '))
-
    return output
 end
 

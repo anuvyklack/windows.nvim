@@ -7,8 +7,8 @@ local augroup = vim.api.nvim_create_augroup('windows.auto-width', {})
 local command = vim.api.nvim_create_user_command
 local M = {}
 
-local curbufnr ---@type integer | nil
-local curwin ---@type win.Window | nil
+local curbufnr ---@type integer
+local curwin ---@type win.Window
 
 ---@type win.ResizeWindowsAnimated?
 local animation
@@ -28,24 +28,18 @@ local function setup_layout()
    end
 end
 
----Coroutine wrap around "setup_layout" function.
----@type function?
-local setup_layout_co
+---Is resizing deferred?
+local defered_resizing = false
 
 function M.enable_auto_width()
    autocmd('BufWinEnter', { group = augroup, callback = function(ctx)
+      defered_resizing = false
       if vim.fn.getcmdwintype() ~= '' then
-         setup_layout_co = nil
+         -- in "[Command Line]" window
          return
       end
       curbufnr = ctx.buf
-
-      if setup_layout_co then
-         setup_layout_co()
-         setup_layout_co = nil
-      else
-         setup_layout()
-      end
+      setup_layout()
    end })
 
    autocmd('WinEnter', { group = augroup, callback = function(ctx)
@@ -55,19 +49,18 @@ function M.enable_auto_width()
       end
       curwin = win
 
-      setup_layout_co = coroutine.wrap(setup_layout)
+      defered_resizing = true
 
       vim.defer_fn(function()
-         if setup_layout_co then
-            setup_layout_co()
-            setup_layout_co = nil
+         if defered_resizing then
+            setup_layout()
+            defered_resizing = false
          end
       end, 10)
    end })
 
    autocmd('TabLeave', { group = augroup, callback = function()
       if animation then animation:finish() end
-      curwin = nil
    end })
 end
 
