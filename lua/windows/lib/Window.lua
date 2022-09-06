@@ -16,6 +16,12 @@ function Window:initialize(winid)
    self.id = (not winid or winid == 0) and api.nvim_get_current_win() or winid
 end
 
+---@param l win.Window
+---@param r win.Window
+function Window.__eq(l, r)
+   return l.id == r.id
+end
+
 ---@return integer bufnr
 function Window:get_buf()
    return api.nvim_win_get_buf(self.id)
@@ -77,6 +83,10 @@ end
 
 ---@return integer width
 function Window:get_wanted_width()
+   if self:get_option('winfixwidth') then
+      return self:get_width()
+   end
+
    local w = config.winwidth
    if 0 < w and w < 1 then
       return math.floor(w * vim.o.columns)
@@ -111,12 +121,6 @@ end
 ---@param height integer
 function Window:set_height(height)
    api.nvim_win_set_height(self.id, height)
-end
-
----@param l win.Window
----@param r win.Window
-function Window.__eq(l, r)
-   return l.id == r.id
 end
 
 return Window
