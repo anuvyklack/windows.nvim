@@ -29,11 +29,11 @@ local function setup_layout()
 end
 
 ---Is resizing deferred?
-local defered_resizing = false
+local resizing_defered = false
 
 function M.enable_auto_width()
    autocmd('BufWinEnter', { group = augroup, callback = function(ctx)
-      defered_resizing = false
+      resizing_defered = false
       if vim.fn.getcmdwintype() ~= '' then
          -- in "[Command Line]" window
          return
@@ -49,12 +49,12 @@ function M.enable_auto_width()
       end
       curwin = win
 
-      defered_resizing = true
+      resizing_defered = true
 
       vim.defer_fn(function()
-         if defered_resizing then
+         if resizing_defered then
             setup_layout()
-            defered_resizing = false
+            resizing_defered = false
          end
       end, 10)
    end })
