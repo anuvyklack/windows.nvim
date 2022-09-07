@@ -6,10 +6,12 @@ local Animation = require('animation')
 local Window = require('windows.lib.api').win
 local cache = require('windows.cache')
 local round = require('windows.util').round
+local ffi = require('windows.lib.ffi')
 
 ---@class win.ResizeWindowsAnimated : nvim.Animation
----@field _instance win.ResizeWindowsAnimated the instance of the singleton
 ---@field winsdata win.WinResizeData[]
+---@field curwin win.Window
+---@field cursor_pos? { [1]: integer, [2]: integer } The cursor position of the current window
 ---@field ignored_wins win.Window[] Windows to ignore during animation
 ---@field new fun(...):win.ResizeWindowsAnimated
 local ResizeWindowsAnimated = singleton(Animation)
@@ -19,7 +21,8 @@ function ResizeWindowsAnimated:initialize(duration, fps, easing)
 end
 
 ---@param winsdata win.WinResizeData[]
-function ResizeWindowsAnimated:load(winsdata)
+---@param cursor_pos? { [1]: integer, [2]: integer } The cursor position of the current window
+function ResizeWindowsAnimated:load(winsdata, cursor_pos)
    if self:is_running() then self:finish() end
 
    self.winsdata = {}
@@ -48,6 +51,9 @@ function ResizeWindowsAnimated:load(winsdata)
       end
    end
 
+   self.curwin = Window(0)
+   self.cursor_pos = cursor_pos
+
    -- local IDs = {}
    -- for _, d in ipairs(winsdata) do
    --    IDs[d.win.id] = true
@@ -73,6 +79,17 @@ function ResizeWindowsAnimated:load(winsdata)
             d.win:set_height(height)
          end
       end
+
+      if self.cursor_pos then
+         local line, col = unpack(self.cursor_pos)
+         if self.curwin:get_cursor()[2] < col then
+            col = self.curwin:get_width() - ffi.curwin_col_off() - 1
+         else
+            self.cursor_pos = nil
+         end
+         self.curwin:set_cursor({line, col})
+      end
+
    end)
 end
 

@@ -2,6 +2,8 @@ local calculate_layout = require('windows.calculate-layout').calculate_layout_fo
 local resize_windows = require('windows.lib.resize-windows')
 local Window = require('windows.lib.api').win
 local config = require('windows.config')
+local cache = require('windows.cache')
+local ffi = require('windows.lib.ffi')
 local autocmd = vim.api.nvim_create_autocmd
 local augroup = vim.api.nvim_create_augroup('windows.auto-width', {})
 local command = vim.api.nvim_create_user_command
@@ -20,7 +22,14 @@ local function setup_layout()
    local winsdata = calculate_layout(curwin)
    if winsdata then
       if animation then
-         animation:load(winsdata)
+         local cursor_pos
+
+         local win_cache = cache.window[curwin]
+         if win_cache then
+            cursor_pos = win_cache.cursor_pos
+         end
+
+         animation:load(winsdata, cursor_pos)
          animation:run()
       else
          resize_windows(winsdata)
@@ -32,6 +41,7 @@ end
 local resizing_defered = false
 
 function M.enable_auto_width()
+
    autocmd('BufWinEnter', { group = augroup, callback = function(ctx)
       resizing_defered = false
       if vim.fn.getcmdwintype() ~= '' then
@@ -49,8 +59,18 @@ function M.enable_auto_width()
       end
       curwin = win
 
-      resizing_defered = true
+      local win_cache = cache.window[curwin]
+      if win_cache then
+         local cursor_pos = win_cache.cursor_pos
+         local width = curwin:get_width() - ffi.curwin_col_off()
+         if width > cursor_pos[2] then
+            curwin:set_cursor(cursor_pos)
+         else
+            curwin:set_cursor({cursor_pos[1], width - 1})
+         end
+      end
 
+      resizing_defered = true
       vim.defer_fn(function()
          if resizing_defered then
             setup_layout()
@@ -59,9 +79,29 @@ function M.enable_auto_width()
       end, 10)
    end })
 
+   autocmd('WinLeave', { group = augroup, callback = function()
+      local win = Window() ---@type win.Window
+      local cursor_pos = win:get_cursor()
+      cache.window[win] = {
+         cursor_pos = cursor_pos
+      }
+      -- win:set_cursor({cursor_pos[1], 0})
+   end })
+
+   autocmd('WinClosed', { group = augroup, callback = function(ctx)
+      ---Id of the closing window.
+      local id = tonumber(ctx.match) --[[@as integer]]
+      local win = Window(id) ---@type win.Window
+      if win:is_floating() or win:is_ignored() then
+         return
+      end
+      cache.window[id] = nil
+   end })
+
    autocmd('TabLeave', { group = augroup, callback = function()
       if animation then animation:finish() end
    end })
+
 end
 
 function M.disable_auto_width()
