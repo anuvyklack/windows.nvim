@@ -1,19 +1,44 @@
 local class = require('middleclass')
--- local Animation = require('windows.animation')
 local config = require('windows.config')
 local api = vim.api
--- local cmd = vim.cmd
 
----@class WinID : integer
+--------------------------------------------------------------------------------
 
 ---@class win.Window
----@field id WinID
+---@field id integer
 ---@field _original_options? table<string, any>
 local Window = class('win.Window')
 
 ---@param winid? integer If absent or 0 - the current window ID will be used.
 function Window:initialize(winid)
    self.id = (not winid or winid == 0) and api.nvim_get_current_win() or winid
+end
+
+---@return integer width
+function Window:get_wanted_width()
+   if self:get_option('winfixwidth') then
+      return self:get_width()
+   end
+
+   local w = config.winwidth
+   if 0 < w and w < 1 then
+      return math.floor(w * vim.o.columns)
+   else
+      -- Textwidth
+      ---@type integer
+      local tw = api.nvim_buf_get_option(self:get_buf(), 'textwidth') or 80
+
+      if tw == 0 then tw = 80 end
+      if w < 0 then
+         return tw - w
+      elseif w == 0 then
+         return tw
+      elseif 1 <= w and w <= 2 then
+         return math.floor(w * tw)
+      else
+         return tw + w
+      end
+   end
 end
 
 ---@param l win.Window
@@ -49,6 +74,7 @@ function Window:is_ignored()
    end
 end
 
+---@param name string
 function Window:get_option(name)
    return api.nvim_win_get_option(self.id, name)
 end
@@ -81,33 +107,6 @@ function Window:get_width()
    return api.nvim_win_get_width(self.id)
 end
 
----@return integer width
-function Window:get_wanted_width()
-   if self:get_option('winfixwidth') then
-      return self:get_width()
-   end
-
-   local w = config.winwidth
-   if 0 < w and w < 1 then
-      return math.floor(w * vim.o.columns)
-   else
-      -- Textwidth
-      ---@type integer
-      local tw = api.nvim_buf_get_option(self:get_buf(), 'textwidth') or 80
-
-      if tw == 0 then tw = 80 end
-      if w < 0 then
-         return tw - w
-      elseif w == 0 then
-         return tw
-      elseif 1 <= w and w <= 2 then
-         return math.floor(w * tw)
-      else
-         return tw + w
-      end
-   end
-end
-
 ---@return integer
 function Window:get_height()
    return api.nvim_win_get_height(self.id)
@@ -123,4 +122,37 @@ function Window:set_height(height)
    api.nvim_win_set_height(self.id, height)
 end
 
-return Window
+---@param pos { [1]: integer, [2]: integer }
+function Window:set_cursor(pos)
+   api.nvim_win_set_cursor(self.id, pos)
+end
+
+---@return { [1]: integer, [2]: integer } pos
+function Window:get_cursor()
+   return api.nvim_win_get_cursor(self.id)
+end
+
+--------------------------------------------------------------------------------
+
+---@class win.Buffer
+---@field id integer
+local Buffer = class('win.Buffer')
+
+function Buffer:initialize(bufnr)
+   self.id = bufnr
+end
+
+---@param l win.Buffer
+---@param r win.Buffer
+function Buffer.__eq(l, r)
+   return l.id == r.id
+end
+
+---@param name string
+function Buffer:get_option(name)
+   return api.nvim_buf_get_option(self.id, name)
+end
+
+--------------------------------------------------------------------------------
+
+return { win = Window, buf = Buffer }

@@ -4,7 +4,7 @@
 --- frame width.
 ---
 local class = require('middleclass')
-local Window = require('windows.lib.Window')
+local Window = require('windows.lib.api').win
 local round = require('windows.util').round
 local list_extend = vim.list_extend
 

@@ -3,6 +3,8 @@
 ---
 local singleton = require('windows.class.singleton')
 local Animation = require('animation')
+local Window = require('windows.lib.api').win
+local cache = require('windows.cache')
 local round = require('windows.util').round
 
 ---@class win.ResizeWindowsAnimated : nvim.Animation

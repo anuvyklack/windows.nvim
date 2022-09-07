@@ -1,6 +1,6 @@
 local calculate_layout = require('windows.calculate-layout').calculate_layout_for_auto_width
 local resize_windows = require('windows.lib.resize-windows')
-local Window = require('windows.lib.Window')
+local Window = require('windows.lib.api').win
 local config = require('windows.config')
 local autocmd = vim.api.nvim_create_autocmd
 local augroup = vim.api.nvim_create_augroup('windows.auto-width', {})

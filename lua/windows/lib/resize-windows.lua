@@ -1,4 +1,4 @@
-local Window = require('windows.lib.Window')
+local Window = require('windows.lib.api').win
 
 ---@param winsdata win.WinResizeData[]
 local function resize_windows(winsdata)
