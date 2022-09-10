@@ -12,11 +12,13 @@ local config = {
    winminwidth = 20, -- vim.o.winminwidth
    ignore = {
       buftype = { 'quickfix' },
-      filetype = { 'neo-tree', 'NvimTree' }
+      filetype = { 'NvimTree', 'neo-tree', 'undotree', 'NeogitStatus' }
    },
    animation = {
       duration = 300,
       fps = 30,
+      -- duration = 4000,
+      -- fps = 3,
       easing = 'in_out_sine' ---@diagnostic disable-line
    }
 }

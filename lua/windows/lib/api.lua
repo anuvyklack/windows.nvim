@@ -81,6 +81,11 @@ function Window:get_option(name)
    return api.nvim_win_get_option(self.id, name)
 end
 
+---@param name string
+function Window:set_option(name, value)
+   return api.nvim_win_set_option(self.id, name, value)
+end
+
 ---Temporary change window scoped option.
 ---@param name string
 ---@param value any

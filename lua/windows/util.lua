@@ -18,18 +18,6 @@ function util.megre_config(default, input)
    return r
 end
 
----Without arguments return a current high-resolution time in milliseconds.
----If `start` is passed, then return the time passed since given time point.
----@param start? number some time point in the past
----@return number time
-function util.time(start)
-   local time = vim.loop.hrtime() / 1e6
-   if start then
-      time = time - start
-   end
-   return time
-end
-
 ---Returns the integer part of the number
 ---@param x number
 ---@return integer
@@ -70,6 +58,44 @@ function util.subtract_list_from_list(minuend, subtract)
       end
    end
    return result
+end
+
+---Without arguments return a current high-resolution time in milliseconds.
+---If `start` is passed, then return the time passed since given time point.
+---@param start? number some time point in the past
+---@return number time
+function util.time(start)
+   local time = vim.loop.hrtime() / 1e6
+   if start then
+      time = time - start
+   end
+   return time
+end
+
+function util.timeit(fun, n)
+   local times = {}
+   local start, finish
+   for _ = 1, n or 100 do
+      start = vim.loop.hrtime()
+      fun()
+      finish = vim.loop.hrtime()
+      times[#times+1] = (finish - start) / 1e3
+   end
+   local N = #times
+
+   local t_mean = 0
+   for _, t in ipairs(times) do
+      t_mean = t_mean + t
+   end
+   t_mean = t_mean / N
+
+   local S = 0
+   for _, t in ipairs(times) do
+      S = S + math.pow(t - t_mean, 2)
+   end
+   S = math.sqrt(S / (N - 1))
+
+   return string.format('%f +/- %d', t_mean, S)
 end
 
 return util

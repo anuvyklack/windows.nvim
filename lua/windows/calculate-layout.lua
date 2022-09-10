@@ -4,7 +4,9 @@
 --- frame width.
 ---
 local Frame = require('windows.lib.Frame')
+local WinResDataList = require('windows.lib.resize-windows').WinResDataList
 local round = require('windows.util').round
+local cache = require('windows.cache')
 local M = {}
 
 ---@param topFrame win.Frame
@@ -12,7 +14,7 @@ local M = {}
 local function calculate_layout_for_auto_width_recursively(topFrame, curwinLeaf)
    local curwin = curwinLeaf.win
 
-   local curwinFrame = topFrame:get_child(curwinLeaf)
+   local curwinFrame = topFrame:get_child_with_frame(curwinLeaf)
 
    if topFrame.type == 'col' then
       local width = topFrame.new_width
@@ -91,52 +93,6 @@ local function calculate_layout_for_auto_width_recursively(topFrame, curwinLeaf)
          end
       end
    end
-end
-
----@param curwin win.Window
----@return win.WinResizeData[]?
-function M.calculate_layout_for_auto_width(curwin)
-   local topFrame = Frame() ---@type win.Frame
-   if topFrame.type == 'leaf' then
-      return
-   end
-   topFrame:mark_fixed_width()
-   topFrame.new_width = vim.o.columns --[[@as integer]]
-
-   if curwin:is_valid()
-      and not curwin:is_floating()
-      and not curwin:get_option('winfixwidth')
-      and not curwin:is_ignored()
-   then
-      local curwinLeaf = topFrame:find_window(curwin)
-      local topFrame_width = topFrame:get_width()
-      local curwin_wanted_width = curwin:get_wanted_width()
-      local topFrame_wanted_width = topFrame:get_min_width(curwin, curwin_wanted_width)
-
-      if topFrame_wanted_width > topFrame_width then
-         M.maximize_window(topFrame, curwinLeaf, true, false)
-      else
-         calculate_layout_for_auto_width_recursively(topFrame, curwinLeaf)
-      end
-   else
-      topFrame:equalize_windows(true, false)
-   end
-
-   local output = {} ---@type win.WinResizeData[]
-   for i, leaf in ipairs(topFrame:get_leafs_for_auto_width()) do
-      output[i] = {
-         win = leaf.win,
-         final_width = leaf.new_width
-      }
-   end
-
-   -- local t = {};
-   -- for _, d in ipairs(output) do
-   --    t[#t+1] = string.format('%d : %d', d.win.id, d.final_width)
-   -- end
-   -- print(table.concat(t, ' | '))
-
-   return output
 end
 
 ---@param topFrame win.Frame
@@ -234,6 +190,83 @@ function M.maximize_window(topFrame, winLeaf, do_width, do_height)
       winFrame = parentFrame
       parentFrame = parentFrame.parent
    end
+end
+
+---@param curwin win.Window
+---@return win.WinResDataList?
+function M.calculate_layout_for_auto_width(curwin)
+   local topFrame = Frame() ---@type win.Frame
+   if topFrame.type == 'leaf' then
+      return
+   end
+   topFrame:mark_fixed_width()
+   topFrame.new_width = vim.o.columns --[[@as integer]]
+
+   if curwin:is_valid()
+      and not curwin:is_floating()
+      and not curwin:get_option('winfixwidth')
+      and not curwin:is_ignored()
+   then
+      local curwinLeaf = topFrame:find_window(curwin)
+      local topFrame_width = topFrame:get_width()
+      local curwin_wanted_width = curwin:get_wanted_width()
+      local topFrame_wanted_width = topFrame:get_min_width(curwin, curwin_wanted_width)
+
+      if topFrame_wanted_width > topFrame_width then
+         M.maximize_window(topFrame, curwinLeaf, true, false)
+      else
+         calculate_layout_for_auto_width_recursively(topFrame, curwinLeaf)
+      end
+   else
+      topFrame:equalize_windows(true, false)
+   end
+
+   local leafs = topFrame:get_leafs_for_width_resizing()
+   local data = WinResDataList('width', leafs) ---@type win.WinResDataList
+
+   -- local t = {};
+   -- for _, d in ipairs(data) do
+   --    t[#t+1] = string.format('%d : %d', d.win.id, d.final_width)
+   -- end
+   -- print(table.concat(t, ' | '))
+
+   return data
+end
+
+---@param curwin win.Window
+---@return win.WinResDataList?
+function M.calculate_layout_for_window_maximization(curwin)
+   local topFrame = Frame() ---@type win.Frame
+   if topFrame.type == 'leaf' then
+      return
+   end
+   topFrame:mark_fixed_width()
+   topFrame:mark_fixed_height()
+   topFrame.new_width = vim.o.columns --[[@as integer]]
+   topFrame.new_height = vim.o.lines --[[@as integer]]
+
+   local curwinLeaf = topFrame:find_window(curwin)
+   M.maximize_window(topFrame, curwinLeaf, true, true)
+
+   local width_leafs = topFrame:get_leafs_for_width_resizing()
+   local height_leafs = topFrame:get_leafs_for_height_resizing()
+
+   local height_data = WinResDataList('height', height_leafs) ---@type win.WinResDataList
+
+   local restore_height_data = {}
+   for _, d in ipairs(height_data) do
+      local win = d.win
+      table.insert(restore_height_data, {
+         win = win,
+         height = win:get_height()
+      })
+   end
+   cache.restore_maximized = restore_height_data
+
+   local data = WinResDataList('width', width_leafs) ---@type win.WinResDataList
+   data:extend('height', height_data)
+
+   return data
 end
 
 return M

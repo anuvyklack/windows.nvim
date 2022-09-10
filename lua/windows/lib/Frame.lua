@@ -128,7 +128,7 @@ end
 ---@param frame win.Frame
 ---@return win.Frame
 ---@return integer index Index of child frame among other children.
-function Frame:get_child(frame)
+function Frame:get_child_with_frame(frame)
    local n = #self.id
    assert(frame.id:sub(0, n) == self.id, "The Frame does not contain seeking frame")
    local i = tonumber(frame.id:sub(n+1, n+1)) --[[@as integer]]
@@ -169,9 +169,7 @@ function Frame:get_longest_column()
       local output
       local N = 0
       for i, frame in ipairs(self.children) do
-         print(i, frame.type)
          local col = frame:get_longest_column()
-         print(type(col))
          if #col > N then
             output = col
             N = #col
@@ -455,56 +453,6 @@ function Frame:equalize_windows(do_width, do_height)
    end
 end
 
--- function Frame:equalize_windows_widths()
---    if self.type == 'col' then
---       local w = self.new_width
---       for _, frame in ipairs(self.children) do
---          frame.new_width = w
---          if frame.type ~= 'leaf' then
---             frame:equalize_windows_widths()
---          end
---       end
---    elseif self.type == 'row' then
---
---       local Nw = #self:get_longest_row() -- number of windows
---
---       -- #self.children - 1 : widths of separators between children frames
---       local room = self.new_width - #self.children + 1
---
---       local var_width_frames = {} ---@type win.Frame[]
---       for _, frame in ipairs(self.children) do
---          if frame:is_fixed_width() then
---             frame.new_width = frame:get_width()
---             room = room - frame.new_width - 1
---             Nw = Nw - #frame:get_longest_row()
---          else
---             table.insert(var_width_frames, frame)
---          end
---       end
---
---       local Nf = #var_width_frames -- number of frames
---       for i, frame in ipairs(var_width_frames) do
---          if not frame.new_width then
---             if i == Nf then
---                frame.new_width = room
---             else
---                local n = #frame:get_longest_row()
---                local width = round(room * n / Nw + n - 1)
---                Nw = Nw - n
---                frame.new_width = width
---                room = room - width
---             end
---          end
---       end
---
---       for _, frame in ipairs(self.children) do
---          if frame.type ~= 'leaf' then
---             frame:equalize_windows_widths()
---          end
---       end
---    end
--- end
-
 ---Return the list of indexes of nested frames, follow which you can find the
 ---window "leaf" frame.
 ---@param win win.Window
@@ -524,58 +472,29 @@ function Frame:find_window(win)
    end ---@diagnostic disable-line
 end
 
---------------------------------------------------------------------------------
-
--- ---Mark all nested frames that contain passed window. Whether the frame is
--- ---marked, can be checked with `is_curwin` method.
--- ---@param win? win.Window
--- function Frame:set_curwin(win)
---    win = win or Window()
---    local frame = self:find_window(win)
---    while frame do
---       frame._curwin_frame = true
---       frame = frame.parent
---    end
--- end
---
--- ---Return `true` if the frame containes "current" window.
--- ---@return boolean
--- function Frame:is_curwin()
---    return self._curwin_frame or false
--- end
---
--- ---@return win.Frame
--- function Frame:get_curwinFrame()
---    for _, frame in ipairs(self.children) do
---       if frame:is_curwin() then
---          return frame
---       end
---    end
---    error('No curwinFrame found')
--- end
-
---------------------------------------------------------------------------------
-
----Does frame have leaf-type frame among its children?
-function Frame:has_leaf()
+---If frame has leaf type frames among its direct children, then return it.
+---If thare are several of them, then return then first one. If the frame is
+---a leaf itself, then return itself.
+---@return win.Frame | nil
+function Frame:get_direct_child_leaf()
    if self.type == 'leaf' then
-      return false
-   end
-   for _, frame in ipairs(self.children) do
-      if frame.type == 'leaf' then
-         return true
+      return self
+   else
+      for _, frame in ipairs(self.children) do
+         if frame.type == 'leaf' then
+            return frame
+         end
       end
    end
-   return false
 end
 
-function Frame:get_all_leafs()
+function Frame:get_all_nested_leafs()
    if self.type == 'leaf' then
       return { self }
    else
       local output = {}
       for _, frame in ipairs(self.children) do
-         list_extend(output, frame:get_all_leafs())
+         list_extend(output, frame:get_all_nested_leafs())
       end
       return output
    end
@@ -583,80 +502,118 @@ end
 
 --------------------------------------------------------------------------------
 
----Extract the list of windows suitable for auto-width resizing.
----@param add_last_in_first_row boolean? Add last frame in first row
+---Extract the list of windows suitable for width resizing.
 ---@return win.Frame[]
-function Frame:_get_leafs_for_auto_width_recursively(add_last_in_first_row)
+function Frame:get_leafs_for_width_resizing()
    if self.type == 'leaf' then
+      -- We get here only if root has only one "leaf" frame
       return { self }
    elseif self.type == 'row' then
-      local output = {}
-
+      local r = {}
       local N = #self.children
-
-      if self.children[N-1].type ~= 'leaf'
-         and not self.children[N-1]:has_leaf()
-      then
-         -- self.children[N-1] should be colomn frame because we are in row frame
-         add_last_in_first_row = true
-      end
-
+      local add_last
       for i, frame in ipairs(self.children) do
-         if i ~= N or frame.type ~= 'leaf' or add_last_in_first_row then
-            if frame.type == 'leaf' then
-               table.insert(output, frame)
-            else
-               list_extend(output, frame:_get_leafs_for_auto_width_recursively())
+         if i < N or add_last then
+            local f = frame:get_direct_child_leaf()
+            if f then
+               table.insert(r, f)
+            end
+            if i == N-1 then
+               add_last = not f
             end
          end
-      end
-
-      return output
-   else -- self.type == 'col'
-      local output = {}
-
-      local has_leaf = false
-      for _, frame in ipairs(self.children) do
-         if frame.type == 'leaf' then
-            table.insert(output, frame)
-            has_leaf = true
-            break
-         end
-      end
-
-      for i, frame in ipairs(self.children) do
          if frame.type ~= 'leaf' then
-            list_extend(output, frame:_get_leafs_for_auto_width_recursively(
-               i == 1 and not has_leaf))
+            list_extend(r, frame:get_leafs_for_width_resizing())
          end
       end
 
-      return output
+      return r
+   else -- self.type == 'col'
+      local r = {}
+
+      for _, frame in ipairs(self.children) do
+         if frame.type ~= 'leaf' then
+            list_extend(r, frame:get_leafs_for_width_resizing())
+         end
+      end
+
+      return r
    end
 end
 
+---Extract the list of windows suitable for height resizing.
 ---@return win.Frame[]
-function Frame:get_leafs_for_auto_width()
+function Frame:get_leafs_for_height_resizing()
    if self.type == 'leaf' then
+      -- We get here only if root has only one "leaf" frame
       return { self }
+   elseif self.type == 'col' then
+      local r = {}
+      local N = #self.children
+      local add_last
+      for i, frame in ipairs(self.children) do
+         if i < N or add_last then
+            local f = frame:get_direct_child_leaf()
+            if f then
+               table.insert(r, f)
+            end
+            if i == N-1 then
+               add_last = not f
+            end
+         end
+         if frame.type ~= 'leaf' then
+            list_extend(r, frame:get_leafs_for_height_resizing())
+         end
+      end
+
+      return r
+   else -- self.type == 'row'
+      local r = {}
+
+      for _, frame in ipairs(self.children) do
+         if frame.type ~= 'leaf' then
+            list_extend(r, frame:get_leafs_for_height_resizing())
+         end
+      end
+
+      return r
    end
-
-   -- ---Set with all WinIDs of the rightmost windows.
-   -- local rightmost_winids = {}
-   -- for _, l in ipairs(self:_get_rightmost_frames()) do
-   --    rightmost_winids[l.win.id] = true
-   -- end
-
-   local list = {}
-   for _, leaf in ipairs(self:_get_leafs_for_auto_width_recursively()) do
-      -- if not rightmost_winids[leaf.win.id] then
-      --    table.insert(list, leaf)
-      -- end
-      table.insert(list, leaf)
-   end
-
-   return list
 end
+
+--------------------------------------------------------------------------------
+
+-- function Frame:get_shortest_row()
+--    if self.type == 'leaf' then
+--       return { self }
+--    elseif self.type == 'row' then
+--       local r = {}
+--       for _, frame in ipairs(self.children) do
+--          if frame.type == 'leaf' then
+--             table.insert(r, frame)
+--          else
+--             list_extend(r, frame:get_shortest_row())
+--          end
+--       end
+--       return r
+--    else -- self.type == 'col'
+--       for _, frame in ipairs(self.children) do
+--          if frame.type == 'leaf' then
+--             return { frame }
+--          end
+--       end
+--
+--       local r
+--       local N = math.huge
+--       for _, frame in ipairs(self.children) do
+--          local list = frame:get_shortest_row()
+--          local n = #list
+--          if n < N then
+--             r, N = list, n
+--          end
+--       end
+--       return r
+--    end
+-- end
 
 --------------------------------------------------------------------------------
 
@@ -745,18 +702,18 @@ end
 --  -- └──────┴──────┴──────┴──────┘
 --
 -- test_layouts[4] = { "row", {
---    { "leaf", 1000 },
---    { "col", {
---       { "row", {
---          { "leaf", 1005 },
---          { "leaf", 1006 }
---       }},
---       { "row", {
---          { "leaf", 1007 },
---          { "leaf", 1008 }
---       }},
+-- { "leaf", 1000 },
+-- { "col", {
+--    { "row", {
+--       { "leaf", 1005 },
+--       { "leaf", 1006 }
 --    }},
---    { "leaf", 1002 }
+--    { "row", {
+--       { "leaf", 1007 },
+--       { "leaf", 1008 }
+--    }},
+-- }},
+-- { "leaf", 1002 }
 -- }}
 
 --------------------------------------------------------------------------------
@@ -765,12 +722,16 @@ end
 -- local frame2 = Frame(test_layouts[2])
 -- local frame3 = Frame(test_layouts[3])
 -- local frame4 = Frame(test_layouts[4])
-
--- local w = {}
--- for _, f in ipairs(frame2:get_longest_column_contains_target_window(Window(1006))) do
---    w[#w+1] = f.win.id
+--
+-- local frame, ww, wh = frame1, {}, {}
+-- for _, f in ipairs(frame:get_leafs_for_width_resizing()) do
+--    ww[#ww+1] = f.win.id
 -- end
--- print(w)
+-- for _, f in ipairs(frame:get_leafs_for_height_resizing()) do
+--    wh[#wh+1] = f.win.id
+-- end
+-- print(ww)
+-- print(wh)
 
 -- local win = Window(1011)
 -- local timeit = require('windows.util').timeit

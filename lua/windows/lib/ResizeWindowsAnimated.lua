@@ -7,12 +7,23 @@ local Window = require('windows.lib.api').Window
 local cache = require('windows.cache')
 local round = require('windows.util').round
 local ffi = require('windows.lib.ffi')
+local nvim_feedkeys = vim.api.nvim_feedkeys
+local winsaveview = vim.fn.winsaveview
+
+---@class win.ResizeWindowsAnimated.Data
+---@field win win.Window
+---@field initial_width?  integer
+---@field initial_height? integer
+---@field final_width?    integer
+---@field final_height?   integer
+---@field delta_width?    integer The delta between initial and final widths.
+---@field delta_height?   integer The delta between initial and final heights.
 
 ---@class win.ResizeWindowsAnimated : nvim.Animation
----@field winsdata win.WinResizeData[]
+---@field winsdata win.ResizeWindowsAnimated.Data[]
 ---@field curwin win.Window
 ---@field cursor_pos? { [1]: integer, [2]: integer } The cursor position of the current window
----@field ignored_wins win.Window[] Windows to ignore during animation
+---@field cursor_virtcol? integer
 ---@field new fun(...):win.ResizeWindowsAnimated
 local ResizeWindowsAnimated = singleton(Animation)
 
@@ -20,53 +31,43 @@ function ResizeWindowsAnimated:initialize(duration, fps, easing)
    Animation.initialize(self, duration, fps, easing, nil)
 end
 
----@param winsdata win.WinResizeData[]
----@param cursor_pos? { [1]: integer, [2]: integer } The cursor position of the current window
-function ResizeWindowsAnimated:load(winsdata, cursor_pos)
+---@param winsdata win.WinResDataList
+function ResizeWindowsAnimated:load(winsdata)
    if self:is_running() then self:finish() end
 
    self.winsdata = {}
-   for _, d in ipairs(winsdata) do
-      local a = false
-      if d.final_width then
-         local f = d.final_width -- final
-         local i = d.win:get_width() -- initial
-         if f < i - 2 or i + 2 < f then
-            a = true
-            d.initial_width = i
-            d.delta_width = f - i -- delta
+   for _, wd in ipairs(winsdata) do
+      local data, add = {}, false
+      if wd.width then
+         local fin = wd.width -- final
+         local init = wd.win:get_width() -- initial
+         if fin < init - 2 or init + 2 < fin then
+            add = true
+            data.win = wd.win
+            data.initial_width = init
+            data.delta_width = fin - init -- delta
          end
       end
-      if d.final_height then
-         local f = d.final_height -- final
-         local i = d.win:get_height() -- initial
-         if i ~= f then
-            a = true
-            d.initial_height = i
-            d.delta_height = f - i -- delta
+      if wd.height then
+         local fin = wd.height -- final
+         local init = wd.win:get_height() -- initial
+         if init ~= fin then
+            add = true
+            data.win = wd.win
+            data.initial_height = init
+            data.delta_height = fin - init -- delta
          end
       end
-      if a then
-         table.insert(self.winsdata, d)
+      if add then
+         table.insert(self.winsdata, data)
       end
    end
 
    self.curwin = Window(0)
-   self.cursor_pos = cursor_pos
 
-   -- local IDs = {}
-   -- for _, d in ipairs(winsdata) do
-   --    IDs[d.win.id] = true
-   -- end
-
-   -- self.ignored_wins = {}
-   -- self.eadirection = vim.o.eadirection
-   -- for _, id in ipairs(api.nvim_tabpage_list_wins(0)) do
-   --    local win = Window(id) ---@type win.Window
-   --    if not IDs[id] and win:is_ignored() then
-   --       table.insert(self.ignored_wins, win)
-   --    end
-   -- end
+   if winsaveview().leftcol == 0 then
+      self.cursor_virtcol = cache.cursor_virtcol[self.curwin]
+   end
 
    self:set_callback(function(fraction)
       for _, d in ipairs(self.winsdata) do
@@ -80,15 +81,44 @@ function ResizeWindowsAnimated:load(winsdata, cursor_pos)
          end
       end
 
-      if self.cursor_pos then
-         local line, col = unpack(self.cursor_pos)
-         if self.curwin:get_cursor()[2] < col then
-            col = self.curwin:get_width() - ffi.curwin_col_off() - 1
+      if self.cursor_virtcol then
+         local width = self.curwin:get_width() - ffi.curwin_col_off()
+         -- local col = (width < self.cursor_virtcol) and width or self.cursor_virtcol
+         local col
+         if width < self.cursor_virtcol then
+            col = width
          else
-            self.cursor_pos = nil
+            col = self.cursor_virtcol
+            self.cursor_virtcol = nil
          end
-         self.curwin:set_cursor({line, col})
+         vim.api.nvim_feedkeys(col..'|', 'nx', false)
+      else
+         nvim_feedkeys('ze', 'nx', false)
       end
+
+      -- if self.cursor_pos then
+      --    local line, col = unpack(self.cursor_pos)
+      --    if self.curwin:get_cursor()[2] < col then
+      --       col = self.curwin:get_width() - ffi.curwin_col_off() - 1
+      --    else
+      --       self.cursor_pos = nil
+      --    end
+      --
+      --    self.curwin:set_cursor({ line, col })
+      --
+      --    -- local ok, error = pcall(vim.api.nvim_win_set_cursor, self.curwin.id, { line, col })
+      --    -- if not ok then
+      --    --    print(error)
+      --    --    local win = self.curwin
+      --    --    P('Window', win.id, 'cursor', win:get_cursor(), 'wanted cursor', { line, col })
+      --    --    -- print(string.format('Win: %d, cursor: '))
+      --    --    local buf = win:get_buf()
+      --    --    P('Buffer', buf.id, buf:get_name())
+      --    -- end
+      -- else
+      --    -- vim.cmd('normal! ze')
+      --    nvim_feedkeys('ze', 'nx', false)
+      -- end
 
    end)
 end
@@ -96,19 +126,11 @@ end
 function ResizeWindowsAnimated:run()
    if self:is_running() then return end
 
-   -- for id, d in ipairs(self.winsdata) do
-   --    -- if d.win.is_valid() then
-   --       d.win:temp_change_option('winfixwidth', true)
-   --       d.win:temp_change_option('winfixheight', true)
-   --    -- else
-   --    --    self.winsdata.id = nil
-   --    -- end
-   -- end
-
-   -- for _, win in ipairs(self.ignored_wins) do
-   --    win:temp_change_option('winfixwidth', true)
-   --    win:temp_change_option('winfixheight', true)
-   -- end
+   if self.cursor_virtcol and cache.virtualedit and cache.virtualedit.win == self.curwin then
+      self.virtualedit = cache.virtualedit.value
+   else
+      self.virtualedit = vim.api.nvim_win_get_option(0, 'virtualedit')
+   end
 
    Animation.run(self)
 end
@@ -118,22 +140,12 @@ function ResizeWindowsAnimated:finish()
 
    Animation.finish(self)
 
-   -- vim.o.eadirection = self.eadirection
-
-   -- for _, d in ipairs(self.winsdata) do
-   --    if d.win:is_valid() then
-   --       d.win:restore_changed_options()
-   --    end
-   -- end
-
-   -- for _, win in ipairs(self.ignored_wins) do
-   --    if win:is_valid() then
-   --       win:restore_changed_options()
-   --    end
-   -- end
+   if self.virtualedit then
+      self.curwin:set_option('virtualedit', self.virtualedit)
+   end
+   cache.virtualedit = nil
 
    self.winsdata = {}
-   self.ignored_wins = {}
 end
 
 return ResizeWindowsAnimated

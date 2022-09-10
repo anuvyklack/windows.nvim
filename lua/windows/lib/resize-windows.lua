@@ -1,43 +1,63 @@
 local class = require('middleclass')
-local Window = require('windows.lib.api').Window
 local M = {}
 
----@param winsdata win.WinResizeData[]
-local function resize_windows(winsdata)
-   local ignored_wins = {}
-   -- local eadirection = vim.o.eadirection
+---@class win.WinResizeData
+---@field win win.Window
+---@field width integer
+---@field height integer
 
-   for _, d in ipairs(winsdata) do
-      d.win:temp_change_option('winfixwidth', true)
-      d.win:temp_change_option('winfixheight', true)
-   end
+---@class win.WinResDataList: { [integer]: win.WinResizeData }
+local WinResDataList = class('win.WinResDataList')
 
-   for _, id in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
-      local win = Window(id) ---@type win.Window
-      if not winsdata[id] and win:is_ignored() then
-         win:temp_change_option('winfixwidth', true)
-         win:temp_change_option('winfixheight', true)
-         table.insert(ignored_wins, win)
+---@param type 'width' | 'height'
+---@param leafs win.Frame[]
+function WinResDataList:initialize(type, leafs)
+   assert(type == 'width' or type == 'height', 'Type is neither "width" nor "height"')
+   for i, frame in ipairs(leafs) do
+      local data = {}
+      data.win = frame.win
+      if type == 'width' then
+         data.width = frame.new_width
+      else
+         data.height = frame.new_height
       end
-   end
-
-   for _, d in ipairs(winsdata) do
-      if d.final_width then
-         d.win:set_width(d.final_width)
-      end
-   end
-   for _, d in ipairs(winsdata) do
-      if d.delta_height then
-         d.win:set_height(d.final_height)
-      end
-   end
-
-   for _, d in ipairs(winsdata) do
-      d.win:restore_changed_options()
-   end
-   for _, win in ipairs(ignored_wins) do
-      win:restore_changed_options()
+      self[i] = data
    end
 end
 
-return resize_windows
+---@param type? 'width' | 'height'
+---@param data_list win.WinResDataList
+function WinResDataList:extend(type, data_list)
+   assert(type == 'width' or type == 'height', 'Type is neither "width" nor "height"')
+   local winids = {}
+   for i, d in ipairs(self) do
+      winids[d.win.id] = i
+   end
+
+   for _, data in ipairs(data_list) do
+      local i = winids[data.win.id]
+      if i then
+         self[i][type] = data[type]
+      else
+         table.insert(self, data)
+      end
+   end
+   return self
+end
+
+--------------------------------------------------------------------------------
+
+---@param winsdata win.WinResDataList
+function M.resize_windows(winsdata)
+   for _, d in ipairs(winsdata) do
+      if d.width then
+         d.win:set_width(d.width)
+      end
+      if d.height then
+         d.win:set_height(d.height)
+      end
+   end
+end
+
+M.WinResDataList = WinResDataList
+return M
