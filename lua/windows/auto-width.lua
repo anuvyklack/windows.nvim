@@ -1,6 +1,6 @@
 local calculate_layout = require('windows.calculate-layout').calculate_layout_for_auto_width
 local resize_windows = require('windows.lib.resize-windows')
-local Window = require('windows.lib.api').win
+local Window = require('windows.lib.api').Window
 local config = require('windows.config')
 local cache = require('windows.cache')
 local ffi = require('windows.lib.ffi')

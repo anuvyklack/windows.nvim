@@ -1,6 +1,7 @@
 local class = require('middleclass')
 local config = require('windows.config')
 local api = vim.api
+local M = {}
 
 --------------------------------------------------------------------------------
 
@@ -24,9 +25,10 @@ function Window:get_wanted_width()
    if 0 < w and w < 1 then
       return math.floor(w * vim.o.columns)
    else
+      local buf = self:get_buf()
       -- Textwidth
       ---@type integer
-      local tw = api.nvim_buf_get_option(self:get_buf(), 'textwidth') or 80
+      local tw = buf:get_option('textwidth') or 80
 
       if tw == 0 then tw = 80 end
       if w < 0 then
@@ -47,9 +49,9 @@ function Window.__eq(l, r)
    return l.id == r.id
 end
 
----@return integer bufnr
+---@return win.Buffer
 function Window:get_buf()
-   return api.nvim_win_get_buf(self.id)
+   return M.Buffer(api.nvim_win_get_buf(self.id))
 end
 
 ---@return boolean
@@ -64,9 +66,9 @@ end
 
 ---Should we ignore this window during resizing other windows?
 function Window:is_ignored()
-   local bufnr = self:get_buf()
-   local bt = api.nvim_buf_get_option(bufnr, 'buftype')
-   local ft = api.nvim_buf_get_option(bufnr, 'filetype')
+   local buf = self:get_buf()
+   local bt = buf:get_option('buftype')
+   local ft = buf:get_option('filetype')
    if config.ignore.buftype[bt] or config.ignore.filetype[ft] then
       return true
    else
@@ -148,6 +150,10 @@ function Buffer.__eq(l, r)
    return l.id == r.id
 end
 
+function Buffer:get_name(name)
+   return api.nvim_buf_get_name(self.id)
+end
+
 ---@param name string
 function Buffer:get_option(name)
    return api.nvim_buf_get_option(self.id, name)
@@ -155,4 +161,7 @@ end
 
 --------------------------------------------------------------------------------
 
-return { win = Window, buf = Buffer }
+M.Window = Window
+M.Buffer = Buffer
+
+return M

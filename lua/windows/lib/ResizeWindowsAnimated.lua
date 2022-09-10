@@ -3,7 +3,7 @@
 ---
 local singleton = require('windows.class.singleton')
 local Animation = require('animation')
-local Window = require('windows.lib.api').win
+local Window = require('windows.lib.api').Window
 local cache = require('windows.cache')
 local round = require('windows.util').round
 local ffi = require('windows.lib.ffi')
