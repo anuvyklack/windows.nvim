@@ -15,7 +15,6 @@ function M.calculate_layout_for_auto_width(curwin)
       return
    end
    topFrame:mark_fixed_width()
-   topFrame.new_width = vim.o.columns --[[@as integer]]
 
    if curwin:is_valid()
       and not curwin:is_floating()
@@ -56,8 +55,6 @@ end
    end
    topFrame:mark_fixed_width()
    topFrame:mark_fixed_height()
-   topFrame.new_width = vim.o.columns --[[@as integer]]
-   topFrame.new_height = vim.o.lines --[[@as integer]]
 
    local curwinLeaf = topFrame:find_window(curwin)
    topFrame:maximize_window(curwinLeaf, true, true)
