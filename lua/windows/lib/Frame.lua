@@ -30,6 +30,16 @@ function Frame:initialize(layout, id, parent)
    layout = layout or vim.fn.winlayout()
    self.id = id or '0'
    self.parent = parent
+
+   -- Set the new_width and new_height of the top frame, since it can't be
+   -- changed.
+   if not parent then
+      self.new_width = vim.o.columns --[[@as integer]]
+      self.new_height = vim.o.lines - vim.o.cmdheight
+                        - (vim.o.tabline ~= '' and 1 or 0) -- tabline
+                        - 1 -- statusline
+   end
+
    self.type = layout[1]
    if self.type == 'leaf' then
       self.win = Window(layout[2])
@@ -246,8 +256,8 @@ end
 ---Return the width of the frame.
 ---@return integer
 function Frame:get_width()
-   if self.parent == nil then
-      return vim.o.columns --[[@as integer]]
+   if not self.parent then
+      return self.new_width
    elseif self.type == 'leaf' then
       return self.win:get_width()
    elseif self.type == 'row' then
@@ -270,8 +280,8 @@ end
 ---Return the height of the frame.
 ---@return integer
 function Frame:get_height()
-   if self.parent == nil then
-      return vim.o.lines --[[@as integer]]
+   if not self.parent then
+      return self.new_height
    elseif self.type == 'leaf' then
       return self.win:get_height()
    elseif self.type == 'col' then
