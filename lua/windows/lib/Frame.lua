@@ -499,6 +499,182 @@ function Frame:get_direct_child_leaf()
    end
 end
 
+---@param winLeaf win.Frame
+---@param do_width boolean
+---@param do_height boolean
+function Frame:maximize_window(winLeaf, do_width, do_height)
+   if do_width then
+      local topFrame_width = self:get_width()
+      local topFrame_wanted_width = self:get_min_width(winLeaf.win, topFrame_width)
+
+      winLeaf.new_width = 2 * topFrame_width - topFrame_wanted_width
+   end
+
+   if do_height then
+      local topFrame_height = self:get_height()
+      local topFrame_wanted_height = self:get_min_height(winLeaf.win, topFrame_height)
+
+      winLeaf.new_height = 2 * topFrame_height - topFrame_wanted_height
+   end
+
+   local winFrame = winLeaf
+   local parentFrame = winFrame.parent
+   while parentFrame do
+      if parentFrame.type == 'col' then
+
+         if do_height then
+            local height = winFrame.new_height + #parentFrame.children - 1
+            for _, frame in ipairs(parentFrame.children) do
+               if frame ~= winFrame then
+                  if frame:is_fixed_height() then
+                     frame.new_height = frame:get_height()
+                  else
+                     local n = #frame:get_longest_column()
+                     frame.new_height = vim.o.winminheight * n + n - 1
+                  end
+                  height = height + frame.new_height
+               end
+            end
+            -- if parentFrame.new_height then
+            --    assert(parentFrame.new_height == height, string.format('parentFrame.new_height (%d) ~= height (%d)', parentFrame.new_height, height))
+            -- end
+            parentFrame.new_height = height
+         end
+
+         if do_width then
+            local width = winFrame.new_width
+            parentFrame.new_width = width
+            for _, frame in ipairs(parentFrame.children) do
+               if frame ~= winFrame then
+                  frame.new_width = width
+               end
+            end
+         end
+
+      elseif parentFrame.type == 'row' then
+
+         if do_width then
+            local width = winFrame.new_width + #parentFrame.children - 1
+            for _, frame in ipairs(parentFrame.children) do
+               if frame ~= winFrame then
+                  if frame:is_fixed_width() then
+                     frame.new_width = frame:get_width()
+                  else
+                     local n = #frame:get_longest_row()
+                     frame.new_width = vim.o.winminwidth * n + n - 1
+                  end
+                  width = width + frame.new_width
+               end
+            end
+            -- if parentFrame.new_width then
+            --    assert(parentFrame.new_width == width, 'parentFrame.new_width ~= width')
+            -- end
+            parentFrame.new_width = width
+         end
+
+         if do_height then
+            local height = winFrame.new_height
+            parentFrame.new_height = height
+            for _, frame in ipairs(parentFrame.children) do
+               if frame ~= winFrame then
+                  frame.new_height = height
+               end
+            end
+         end
+
+      end
+
+      for _, frame in ipairs(parentFrame.children) do
+         if frame.type ~= 'leaf' and frame ~= winFrame then
+            frame:equalize_windows(do_width, do_height)
+         end
+      end
+
+      winFrame = parentFrame
+      parentFrame = parentFrame.parent
+   end
+end
+
+---@param curwinLeaf win.Frame
+function Frame:autowidth(curwinLeaf)
+   local curwin = curwinLeaf.win
+
+   local curwinFrame = self:get_child_with_frame(curwinLeaf)
+
+   if self.type == 'col' then
+      local width = self.new_width
+      for _, frame in ipairs(self.children) do
+         frame.new_width = width
+         if frame.type ~= 'leaf' then
+            if frame == curwinFrame then
+               frame:autowidth(curwinLeaf)
+            else
+               frame:equalize_windows(true, false)
+            end
+         end
+      end
+   elseif self.type == 'row' then
+      local room = self.new_width
+      local topFrame_leafs = self:get_longest_row()
+
+      local totwincount = #topFrame_leafs
+
+      -- Exclude fixed width frames from consideration.
+      for _, frame in ipairs(self.children) do
+         if frame ~= curwinFrame and frame:is_fixed_width() then
+            local width = frame:get_width()
+            frame.new_width = width
+            room = room - width - 1
+            frame:equalize_windows(true, false)
+
+            totwincount = totwincount - #frame:get_longest_row()
+         end
+      end
+
+      local curwin_wanted_width = curwin:get_wanted_width()
+      local wanted_width = curwinFrame:get_min_width(curwin, curwin_wanted_width)
+
+      local n = #curwinFrame:get_longest_row()
+      local N = totwincount
+      local owed_width = round((room - N + 1) * n / N + n - 1)
+
+      totwincount = totwincount - n
+
+      local width = (wanted_width > owed_width) and wanted_width or owed_width
+      curwinFrame.new_width = width
+      room = room - width - 1
+      if curwinFrame.type ~= 'leaf' then
+         curwinFrame:autowidth(curwinLeaf)
+      end
+
+      ---All children frames that are not curwinFrame and not fixed width.
+      local other_frames = {}
+      for _, frame in ipairs(self.children) do
+         if frame ~= curwinFrame and not frame:is_fixed_width() then
+            table.insert(other_frames, frame)
+         end
+      end
+
+      local Nf = #other_frames
+      for i, frame in ipairs(other_frames) do
+         if i == Nf then
+            frame.new_width = room
+         else
+            local n = #frame:get_longest_row()
+            local N = totwincount
+            local w = round((room - N + 1) * n / N + n - 1)
+            frame.new_width = w
+            room = room - w - 1
+            totwincount = totwincount - n
+         end
+         if frame.type ~= 'leaf' then
+            frame:equalize_windows(true, false)
+         end
+      end
+   end
+end
+
+---@return win.Frame[]
 function Frame:get_all_nested_leafs()
    if self.type == 'leaf' then
       return { self }
