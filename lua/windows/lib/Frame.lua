@@ -178,7 +178,7 @@ function Frame:get_longest_column()
    elseif self.type == 'row' then
       local output
       local N = 0
-      for i, frame in ipairs(self.children) do
+      for _, frame in ipairs(self.children) do
          local col = frame:get_longest_column()
          if #col > N then
             output = col
@@ -386,7 +386,9 @@ function Frame:equalize_windows(do_width, do_height)
          -- #self.children - 1 : height of separators between children frames
          local room = self.new_height - #self.children + 1
 
-         local var_height_frames = {} ---@type win.Frame[]
+         ---Variable height frames
+         ---@type win.Frame[]
+         local var_height_frames = {}
          for _, frame in ipairs(self.children) do
             if frame:is_fixed_height() then
                frame.new_height = frame:get_height()
@@ -463,8 +465,7 @@ function Frame:equalize_windows(do_width, do_height)
    end
 end
 
----Return the list of indexes of nested frames, follow which you can find the
----window "leaf" frame.
+---Return the leaf frame that contains the the sought-for window.
 ---@param win win.Window
 ---@return win.Frame leaf leaf-type frame with sought-for window
 function Frame:find_window(win)
@@ -482,7 +483,7 @@ function Frame:find_window(win)
    end ---@diagnostic disable-line
 end
 
----If frame has leaf type frames among its direct children, then return it.
+---If frame has leaf type frame among its direct children, then return it.
 ---If thare are several of them, then return then first one. If the frame is
 ---a leaf itself, then return itself.
 ---@return win.Frame | nil
