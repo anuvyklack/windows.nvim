@@ -125,7 +125,7 @@ function ResizeWindowsAnimated:finish()
 
    Animation.finish(self)
 
-   if self.virtualedit then
+   if self.virtualedit and self.curwin:is_valid() then
       self.curwin:set_option('virtualedit', self.virtualedit)
    end
    cache.virtualedit = nil
