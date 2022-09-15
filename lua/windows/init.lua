@@ -5,8 +5,10 @@ function M.setup(input)
    config(input)
 
    if config.animation then
-      require('windows.lib.ResizeWindowsAnimated'):new(
-         config.animation.duration, config.animation.fps, config.animation.easing)
+      local ResizeWindowsAnimated = require('windows.lib.resize-windows-animated')
+      ResizeWindowsAnimated:new(config.animation.duration,
+                                config.animation.fps,
+                                config.animation.easing)
    end
 
    if config.enable_autowidth then
