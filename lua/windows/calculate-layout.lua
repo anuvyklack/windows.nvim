@@ -66,6 +66,15 @@ function M.maximize_window(curwin)
    return width_data, height_data
 end
 
+---@return win.WinResizeData[] height
+function M.equalize_heights()
+   local topFrame = Frame() ---@type win.Frame
+   -- if topFrame.type == 'leaf' then
+   --    return
+   -- end
+   topFrame:mark_fixed_height()
+   topFrame:equalize_windows(false, true)
+   return topFrame:get_data_for_height_resizing()
 end
 
 return M
