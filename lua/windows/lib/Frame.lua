@@ -769,6 +769,33 @@ end
 
 --------------------------------------------------------------------------------
 
+---@return win.WinResizeData[]
+function Frame:get_data_for_width_resizing()
+   local r = {}
+   local leafs = self:get_leafs_for_width_resizing()
+   for i, frame in ipairs(leafs) do
+      r[i] = {
+         win = frame.win,
+         width = frame.new_width
+      }
+   end
+   return r
+end
+
+---@return win.WinResizeData[]
+function Frame:get_data_for_height_resizing()
+   local r = {}
+   local leafs = self:get_leafs_for_height_resizing()
+   for i, frame in ipairs(leafs) do
+      r[i] = {
+         win = frame.win,
+         height = frame.new_height
+      }
+   end
+   return r
+end
+
+--------------------------------------------------------------------------------
 -- function Frame:get_shortest_row()
 --    if self.type == 'leaf' then
 --       return { self }
