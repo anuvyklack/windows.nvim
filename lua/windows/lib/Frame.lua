@@ -391,7 +391,7 @@ function Frame:equalize_windows(do_width, do_height)
             if frame:is_fixed_height() then
                frame.new_height = frame:get_height()
                room = room - frame.new_height - 1
-               Nw = Nw - #frame:get_longest_row()
+               Nw = Nw - #frame:get_longest_column()
             else
                table.insert(var_height_frames, frame)
             end
@@ -402,7 +402,7 @@ function Frame:equalize_windows(do_width, do_height)
             if i == Nf then
                frame.new_height = room
             else
-               local n = #frame:get_longest_row()
+               local n = #frame:get_longest_column()
                local height = round(room * n / Nw + n - 1)
                Nw = Nw - n
                frame.new_height = height
