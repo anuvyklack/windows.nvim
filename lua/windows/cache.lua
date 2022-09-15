@@ -1,7 +1,3 @@
--- local class = require('middleclass')
---
--- ---@class win.Cache
-
 local cache = {
    buffer = {},
    cursor_virtcol = {},

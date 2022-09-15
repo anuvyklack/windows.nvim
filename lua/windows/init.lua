@@ -1,6 +1,3 @@
--- vim.api.nvim_tabpage_list_wins
--- vim.fn.getbufinfo
--- vim.go.eadirection
 local config = require('windows.config')
 local M = {}
 
