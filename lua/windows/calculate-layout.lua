@@ -4,7 +4,6 @@
 --- frame width.
 ---
 local Frame = require('windows.lib.Frame')
-local WinResDataList = require('windows.lib.resize-windows').WinResDataList
 local round = require('windows.util').round
 local cache = require('windows.cache')
 local M = {}
@@ -193,8 +192,8 @@ function M.maximize_window(topFrame, winLeaf, do_width, do_height)
 end
 
 ---@param curwin win.Window
----@return win.WinResDataList?
 function M.calculate_layout_for_auto_width(curwin)
+---@return win.WinResizeData[] | nil
    local topFrame = Frame() ---@type win.Frame
    if topFrame.type == 'leaf' then
       return
@@ -221,8 +220,7 @@ function M.calculate_layout_for_auto_width(curwin)
       topFrame:equalize_windows(true, false)
    end
 
-   local leafs = topFrame:get_leafs_for_width_resizing()
-   local data = WinResDataList('width', leafs) ---@type win.WinResDataList
+   local data = topFrame:get_data_for_width_resizing()
 
    -- local t = {};
    -- for _, d in ipairs(data) do
@@ -234,8 +232,8 @@ function M.calculate_layout_for_auto_width(curwin)
 end
 
 ---@param curwin win.Window
----@return win.WinResDataList?
-function M.calculate_layout_for_window_maximization(curwin)
+---@return win.WinResizeData[] | nil width
+---@return win.WinResizeData[] | nil height
    local topFrame = Frame() ---@type win.Frame
    if topFrame.type == 'leaf' then
       return
@@ -248,23 +246,11 @@ function M.calculate_layout_for_window_maximization(curwin)
    local curwinLeaf = topFrame:find_window(curwin)
    M.maximize_window(topFrame, curwinLeaf, true, true)
 
-   local width_leafs = topFrame:get_leafs_for_width_resizing()
-   local height_leafs = topFrame:get_leafs_for_height_resizing()
+   local width_data = topFrame:get_data_for_width_resizing()
+   local height_data = topFrame:get_data_for_height_resizing()
 
-   local height_data = WinResDataList('height', height_leafs) ---@type win.WinResDataList
-
-   local restore_height_data = {}
-   for _, d in ipairs(height_data) do
-      local win = d.win
-      table.insert(restore_height_data, {
-         win = win,
-         height = win:get_height()
-      })
-   end
-   cache.restore_maximized = restore_height_data
-
-   local data = WinResDataList('width', width_leafs) ---@type win.WinResDataList
-   data:extend('height', height_data)
+   return width_data, height_data
+end
 
    return data
 end

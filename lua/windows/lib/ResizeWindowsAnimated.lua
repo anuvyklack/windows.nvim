@@ -31,7 +31,7 @@ function ResizeWindowsAnimated:initialize(duration, fps, easing)
    Animation.initialize(self, duration, fps, easing, nil)
 end
 
----@param winsdata win.WinResDataList
+---@param winsdata win.WinResizeData[]
 function ResizeWindowsAnimated:load(winsdata)
    if self:is_running() then self:finish() end
 
