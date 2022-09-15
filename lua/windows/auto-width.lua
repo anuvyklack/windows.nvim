@@ -1,5 +1,6 @@
-local calculate_layout = require('windows.calculate-layout').calculate_layout_for_auto_width
+local calculate_layout = require('windows.calculate-layout')
 local resize_windows = require('windows.lib.resize-windows').resize_windows
+local merge_resize_data = require('windows.lib.resize-windows').merge_resize_data
 local Window = require('windows.lib.api').Window
 local config = require('windows.config')
 local cache = require('windows.cache')
@@ -14,22 +15,40 @@ local M = {}
 local curwin ---@type win.Window
 local curbufnr ---@type integer
 
+---Flag for when a new window has been created.
+---@type boolean
+local new_window
+
 ---@type win.ResizeWindowsAnimated?
 local animation
 if config.animation then
-   animation = require('windows.lib.ResizeWindowsAnimated'):new()
+   local ResizeWindowsAnimated = require('windows.lib.resize-windows-animated')
+   animation = ResizeWindowsAnimated:new()
 end
 
 local function setup_layout()
    if not curwin then return end
-   local winsdata = calculate_layout(curwin)
-   if winsdata then
-      if animation then
-         animation:load(winsdata)
-         animation:run()
+   local winsdata = calculate_layout.autowidth(curwin)
+
+   if not winsdata then
+      return
+   end
+
+   if cache.restore_maximized then
+      local height_data
+      if new_window then
+         height_data = calculate_layout.equalize_heights()
       else
-         resize_windows(winsdata)
+         height_data = cache.restore_maximized.height
       end
+      winsdata = merge_resize_data(winsdata, height_data)
+      cache.restore_maximized = nil
+   end
+   if animation then
+      animation:load(winsdata)
+      animation:run()
+   else
+      resize_windows(winsdata)
    end
 end
 
@@ -37,10 +56,6 @@ end
 local resizing_defered = false
 
 function M.enable_auto_width()
-   -- autocmd('VimEnter', { group = augroup, callback = function()
-   --    curwin = Window()
-   -- end })
-
    autocmd('BufWinEnter', { group = augroup, callback = function(ctx)
       resizing_defered = false
 
@@ -58,36 +73,21 @@ function M.enable_auto_width()
 
    autocmd('WinEnter', { group = augroup, callback = function(ctx)
       local win = Window(0) ---@type win.Window
-      -- P('WinEnter', win.id)
       if win:is_floating() or (win == curwin and ctx.buf == curbufnr) then
          return
       end
       curwin = win
 
       if animation then
-         -- local cursor_pos = curwin:get_cursor()
-         -- cache.cursor_pos[curwin] = cursor_pos
-         -- local cursor_pos = cache.cursor_pos[curwin]
          local virtcol = cache.cursor_virtcol[curwin]
          if virtcol then
-            -- vim.o.virtualedit = 'all'
-            -- local width = curwin:get_width() - ffi.curwin_col_off()
             local leftcol = fn.winsaveview().leftcol
             local width = curwin:get_width() - ffi.curwin_col_off()
-            -- local virtcol = fn.wincol() - ffi.curwin_col_off()
-            -- P(curwin.id, leftcol, width, virtcol)
             if leftcol == 0 and width < virtcol then
-               -- P('leftcol == 0')
                cache.virtualedit = { win = curwin, value = curwin:get_option('virtualedit') }
                curwin:set_option('virtualedit', 'all')
-               -- curwin:temp_change_option('virtualedit', 'all')
-               -- curwin:set_cursor({ line, 0 })
-               -- fn.setcursorcharpos(0, width-1)
                api.nvim_feedkeys(width..'|', 'nx', false)
                fn.winrestview({ leftcol = 0 })
-               -- curwin:set_cursor({ line, width - 1 })
-               -- cache.cursor_pos[curwin] = { line, col }
-               -- curwin:restore_changed_options()
             end
          end
       end
@@ -101,27 +101,24 @@ function M.enable_auto_width()
       end, 10)
    end })
 
+   autocmd('WinNew', { group = augroup, callback = function()
+      new_window = true
+   end })
+
    if animation then
       autocmd('WinLeave', { group = augroup, callback = function()
-         -- P('WinLeave')
          local win = Window() ---@type win.Window
          if not win:is_floating() and not win:is_ignored()
             and not animation:is_running()
          then
-            -- cache.cursor_pos[win] = win:get_cursor()
             cache.cursor_virtcol[win] = fn.wincol() - ffi.curwin_col_off()
-            -- P(win.id, 'cursor virtcol saved', cache.cursor_virtcol[win])
          end
       end })
 
       autocmd('WinClosed', { group = augroup, callback = function(ctx)
          ---Id of the closing window.
          local id = tonumber(ctx.match) --[[@as integer]]
-         -- local win = Window(id) ---@type win.Window
-         -- if win:is_valid() and (win:is_floating() or win:is_ignored()) then
-         --    return
-         -- end
-         cache.cursor_pos[id] = nil
+         cache.cursor_virtcol[id] = nil
       end })
 
       autocmd('TabLeave', { group = augroup, callback = function()

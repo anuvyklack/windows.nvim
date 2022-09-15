@@ -8,8 +8,8 @@ local M = {}
 
 ---Calculate layout for auotwidth
 ---@param curwin win.Window
-function M.calculate_layout_for_auto_width(curwin)
 ---@return win.WinResizeData[] | nil
+function M.autowidth(curwin)
    local topFrame = Frame() ---@type win.Frame
    if topFrame.type == 'leaf' then
       return
@@ -49,6 +49,7 @@ end
 ---@param curwin win.Window
 ---@return win.WinResizeData[] | nil width
 ---@return win.WinResizeData[] | nil height
+function M.maximize_window(curwin)
    local topFrame = Frame() ---@type win.Frame
    if topFrame.type == 'leaf' then
       return
