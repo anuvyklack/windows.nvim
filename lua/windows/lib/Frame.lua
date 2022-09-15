@@ -28,7 +28,7 @@ local Frame = class('win.Frame')
 ---@param parent? win.Frame
 function Frame:initialize(layout, id, parent)
    layout = layout or vim.fn.winlayout()
-   self.id = id or ''
+   self.id = id or '0'
    self.parent = parent
    self.type = layout[1]
    if self.type == 'leaf' then
