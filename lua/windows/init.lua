@@ -12,7 +12,7 @@ function M.setup(input)
    end
 
    if config.autowidth.enable then
-      require('windows.auto-width').enable_auto_width()
+      require('windows.autowidth').enable_auto_width()
    end
 
    require('windows.maximize-window')
