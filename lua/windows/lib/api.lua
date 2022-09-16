@@ -22,26 +22,29 @@ function Window:get_wanted_width()
       return self:get_width()
    end
 
-   local w = config.winwidth
+   local buf = self:get_buf()
+   local ft = buf:get_option('filetype')
+   local w = config.autowidth.filetype[ft] or config.autowidth.winwidth
+
    if 0 < w and w < 1 then
       return math.floor(w * vim.o.columns)
-   else
-      local buf = self:get_buf()
-      -- Textwidth
-      ---@type integer
-      local tw = buf:get_option('textwidth') or 80
-
-      if tw == 0 then tw = 80 end
-      if w < 0 then
-         return tw - w
-      elseif w == 0 then
-         return tw
-      elseif 1 <= w and w <= 2 then
-         return math.floor(w * tw)
-      else
-         return tw + w
-      end
    end
+
+   -- Textwidth
+   ---@type integer
+   local tw = buf:get_option('textwidth') or 80
+   if tw == 0 then tw = 80 end
+
+   if w < 0 then
+      return tw - w
+   elseif w == 0 then
+      return tw
+   elseif 1 < w and w < 2 then
+      return math.floor(w * tw)
+   else
+      return tw + w
+   end
+
 end
 
 ---@param l win.Window

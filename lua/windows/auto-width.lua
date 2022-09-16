@@ -133,12 +133,12 @@ function M.disable_auto_width()
 end
 
 function M.toggle_auto_width()
-   if config.enable_autowidth then
+   if config.autowidth.enable then
       M.disable_auto_width()
-      config.enable_autowidth = false
+      config.autowidth.enable = false
    else
       M.enable_auto_width()
-      config.enable_autowidth = true
+      config.autowidth.enable = true
    end
 end
 

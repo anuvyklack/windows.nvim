@@ -7,14 +7,18 @@ local mt = {}
 ---@field animation { duration: integer, fps: integer, easing: fun(ratio: number): number } | false
 ---@field ignore { buftype: table<string, true>, filetype: table<string, true> }
 local config = {
-   enable_autowidth = true,
-   winwidth = 10,
-   winminwidth = 20, -- vim.o.winminwidth
+   autowidth = {
+      enable = true, -- false
+      winwidth = 5,
+      filetype = {
+         help = 2,
+      },
+   },
    ignore = {
       buftype = { 'quickfix' },
       filetype = { 'NvimTree', 'neo-tree', 'undotree', 'NeogitStatus' }
    },
-   animation = {
+   animation = { -- false
       duration = 300,
       fps = 30,
       -- duration = 4000,

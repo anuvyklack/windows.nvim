@@ -11,7 +11,7 @@ function M.setup(input)
                                 config.animation.easing)
    end
 
-   if config.enable_autowidth then
+   if config.autowidth.enable then
       require('windows.auto-width').enable_auto_width()
    end
 
