@@ -61,7 +61,8 @@ function M.enable_auto_width()
 
       local win = Window(0) ---@type win.Window
       if win:is_floating()
-         or vim.fn.getcmdwintype() ~= '' -- in "[Command Line]" window
+         or win:get_type() == 'command' -- in "[Command Line]" window
+         -- or vim.fn.getcmdwintype() ~= '' -- in "[Command Line]" window
       then
          return
       end

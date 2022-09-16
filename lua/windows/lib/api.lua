@@ -1,6 +1,7 @@
 local class = require('middleclass')
 local config = require('windows.config')
 local api = vim.api
+local fn = vim.fn
 local M = {}
 
 --------------------------------------------------------------------------------
@@ -61,7 +62,8 @@ end
 
 ---Is this window floating?
 function Window:is_floating()
-   return api.nvim_win_get_config(self.id).relative ~= ''
+   -- return api.nvim_win_get_config(self.id).relative ~= ''
+   return self:get_type() == 'popup'
 end
 
 ---Should we ignore this window during resizing other windows?
@@ -74,6 +76,11 @@ function Window:is_ignored()
    else
       return false
    end
+end
+
+---@return 'autocmd' | 'command' | 'loclist' | 'popup' | 'preview' | 'quickfix' | 'unknown'
+function Window:get_type()
+   return fn.win_gettype(self.id)
 end
 
 ---@param name string
