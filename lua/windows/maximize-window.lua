@@ -1,6 +1,7 @@
 local calculate_layout = require('windows.calculate-layout').maximize_window
 local resize_windows = require('windows.lib.resize-windows').resize_windows
 local merge_resize_data = require('windows.lib.resize-windows').merge_resize_data
+local autowidth = require('windows.autowidth')
 local Window = require('windows.lib.api').Window
 local config = require('windows.config')
 local cache = require('windows.cache')
@@ -19,6 +20,8 @@ function M.maximize_curwin()
    if curwin:is_floating() or vim.api.nvim_tabpage_list_wins(0) == 1 then
       return
    end
+
+   autowidth.resizing_requested = false
 
    local wd, hd
    if cache.restore_maximized then
