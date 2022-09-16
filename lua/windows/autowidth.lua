@@ -19,6 +19,8 @@ local curbufnr ---@type integer
 ---@type boolean
 local new_window
 
+local resizing_requested ---@type boolean
+
 ---@type win.ResizeWindowsAnimated?
 local animation
 if config.animation then
@@ -27,7 +29,11 @@ if config.animation then
 end
 
 local function setup_layout()
-   if not curwin then return end
+   if not curwin or not resizing_requested then
+      return
+   end
+   resizing_requested = false
+
    local winsdata = calculate_layout.autowidth(curwin)
 
    if not winsdata then
@@ -68,6 +74,8 @@ function M.enable_auto_width()
       end
       cache.cursor_virtcol[curwin] = nil
 
+      resizing_requested = true
+
       curbufnr = ctx.buf
       setup_layout()
    end })
@@ -78,6 +86,8 @@ function M.enable_auto_width()
          return
       end
       curwin = win
+
+      resizing_requested = true
 
       if animation then
          local virtcol = cache.cursor_virtcol[curwin]
