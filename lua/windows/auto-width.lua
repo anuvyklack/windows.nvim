@@ -119,7 +119,12 @@ function M.enable_auto_width()
       autocmd('WinClosed', { group = augroup, callback = function(ctx)
          ---Id of the closing window.
          local id = tonumber(ctx.match) --[[@as integer]]
-         cache.cursor_virtcol[id] = nil
+         local win = Window(id)
+
+         if not win:is_floating() then
+            animation:finish()
+            cache.cursor_virtcol[id] = nil
+         end
       end })
 
       autocmd('TabLeave', { group = augroup, callback = function()
