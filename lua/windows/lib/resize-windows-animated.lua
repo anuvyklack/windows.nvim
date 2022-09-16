@@ -36,31 +36,22 @@ function ResizeWindowsAnimated:load(winsdata)
    if self:is_running() then self:finish() end
 
    self.winsdata = {}
-   for _, wd in ipairs(winsdata) do
-      local data, add = {}, false
+   for i, wd in ipairs(winsdata) do
+      local data = {}
+      data.win = wd.win
       if wd.width then
          local fin = wd.width -- final
          local init = wd.win:get_width() -- initial
-         if fin < init - 2 or init + 2 < fin then
-            add = true
-            data.win = wd.win
-            data.initial_width = init
-            data.delta_width = fin - init -- delta
-         end
+         data.initial_width = init
+         data.delta_width = fin - init -- delta
       end
       if wd.height then
          local fin = wd.height -- final
          local init = wd.win:get_height() -- initial
-         if init ~= fin then
-            add = true
-            data.win = wd.win
-            data.initial_height = init
-            data.delta_height = fin - init -- delta
-         end
+         data.initial_height = init
+         data.delta_height = fin - init -- delta
       end
-      if add then
-         table.insert(self.winsdata, data)
-      end
+      self.winsdata[i] = data
    end
 
    self.curwin = Window(0)
