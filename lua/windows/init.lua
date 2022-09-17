@@ -4,7 +4,7 @@ local M = {}
 function M.setup(input)
    config(input)
 
-   if config.animation then
+   if config.animation.enable then
       local ResizeWindowsAnimated = require('windows.lib.resize-windows-animated')
       ResizeWindowsAnimated:new(config.animation.duration,
                                 config.animation.fps,

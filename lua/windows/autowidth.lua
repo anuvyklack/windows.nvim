@@ -23,7 +23,7 @@ M.resizing_requested = false ---@type boolean
 
 ---@type win.ResizeWindowsAnimated?
 local animation
-if config.animation then
+if config.animation.enable then
    local ResizeWindowsAnimated = require('windows.lib.resize-windows-animated')
    animation = ResizeWindowsAnimated:new()
 end
