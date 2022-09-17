@@ -43,7 +43,7 @@ local function setup_layout()
    if cache.restore_maximized then
       local height_data
       if new_window then
-         height_data = calculate_layout.equalize_heights()
+         height_data = calculate_layout.equalize_windows(false, true)
       else
          height_data = cache.restore_maximized.height
       end

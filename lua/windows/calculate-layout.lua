@@ -4,6 +4,7 @@
 --- frame width.
 ---
 local Frame = require('windows.lib.frame')
+local merge_resize_data = require('windows.lib.resize-windows').merge_resize_data
 local M = {}
 
 ---Calculate layout for auotwidth
@@ -66,15 +67,33 @@ function M.maximize_window(curwin)
    return width_data, height_data
 end
 
----@return win.WinResizeData[] height
-function M.equalize_heights()
+---@param do_width boolean
+---@param do_height boolean
+---@return win.WinResizeData[]
+function M.equalize_windows(do_width, do_height)
+   assert(do_width or do_height, 'No arguments have been passed')
    local topFrame = Frame() ---@type win.Frame
    -- if topFrame.type == 'leaf' then
    --    return
    -- end
-   topFrame:mark_fixed_height()
-   topFrame:equalize_windows(false, true)
-   return topFrame:get_data_for_height_resizing()
+
+   if do_width then
+      topFrame:mark_fixed_width()
+   end
+   if do_height then
+      topFrame:mark_fixed_height()
+   end
+
+   topFrame:equalize_windows(do_width, do_height)
+
+   if do_width and not do_height then
+      return topFrame:get_data_for_width_resizing()
+   elseif not do_width and do_height then
+      return topFrame:get_data_for_height_resizing()
+   else
+      return merge_resize_data(topFrame:get_data_for_width_resizing(),
+                               topFrame:get_data_for_height_resizing())
+   end
 end
 
 return M

@@ -1,10 +1,13 @@
-local calculate_layout = require('windows.calculate-layout').maximize_window
+local calculate_layout = require('windows.calculate-layout')
 local resize_windows = require('windows.lib.resize-windows').resize_windows
 local merge_resize_data = require('windows.lib.resize-windows').merge_resize_data
 local autowidth = require('windows.autowidth')
 local Window = require('windows.lib.api').Window
 local config = require('windows.config')
 local cache = require('windows.cache')
+local autocmd = vim.api.nvim_create_autocmd
+local augroup_name = 'windows.maximize'
+local augroup
 local command = vim.api.nvim_create_user_command
 local M = {}
 
@@ -13,6 +16,33 @@ local animation
 if config.animation.enable then
    local ResizeWindowsAnimated = require('windows.lib.resize-windows-animated')
    animation = ResizeWindowsAnimated:new()
+end
+
+local function setup_autocmds()
+   augroup = vim.api.nvim_create_augroup(augroup_name, {})
+
+   autocmd('WinEnter', { group = augroup, callback = function()
+      local winsdata
+      if cache.restore_maximized then
+         local wd = cache.restore_maximized.width or {}
+         local hd = cache.restore_maximized.height or {}
+         winsdata = merge_resize_data(wd, hd)
+         cache.restore_maximized = nil
+      else
+         winsdata = calculate_layout.equalize_windows(true, true)
+      end
+      if animation then
+         animation:load(winsdata)
+         animation:run()
+      else
+         resize_windows(winsdata)
+      end
+      vim.api.nvim_clear_autocmds({ group = augroup })
+   end })
+
+   autocmd('WinClosed', { group = augroup, callback = function()
+      cache.restore_maximized = nil
+   end })
 end
 
 function M.maximize_curwin()
@@ -28,8 +58,9 @@ function M.maximize_curwin()
       wd = cache.restore_maximized.width or {}
       hd = cache.restore_maximized.height or {}
       cache.restore_maximized = nil
+
    else
-      wd, hd = calculate_layout(curwin)
+      wd, hd = calculate_layout.maximize_window(curwin)
       if not wd then
          return
       end
@@ -54,6 +85,10 @@ function M.maximize_curwin()
          }
       end
       cache.restore_maximized.height = new_cache
+
+      if not config.autowidth.enable then
+         setup_autocmds()
+      end
    end
 
    local winsdata = merge_resize_data(wd, hd)
