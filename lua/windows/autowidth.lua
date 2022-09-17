@@ -8,7 +8,7 @@ local ffi = require('windows.lib.ffi')
 local fn = vim.fn
 local api = vim.api
 local autocmd = vim.api.nvim_create_autocmd
-local augroup = vim.api.nvim_create_augroup('windows.auto-width', {})
+local augroup = vim.api.nvim_create_augroup('windows.autowidth', {})
 local command = vim.api.nvim_create_user_command
 local M = {}
 
@@ -35,10 +35,7 @@ local function setup_layout()
    M.resizing_requested = false
 
    local winsdata = calculate_layout.autowidth(curwin)
-
-   if not winsdata then
-      return
-   end
+   if not winsdata then return end
 
    if cache.restore_maximized then
       local height_data
@@ -157,8 +154,8 @@ function M.toggle_auto_width()
    end
 end
 
-command('WindowsEnableAutoWidth',  M.enable_auto_width,  { bang = true })
-command('WindowsDisableAutoWidth', M.disable_auto_width, { bang = true })
-command('WindowsToggleAutoWidth',  M.toggle_auto_width,  { bang = true })
+command('WindowsEnableAutowidth',  M.enable_auto_width,  { bang = true })
+command('WindowsDisableAutowidth', M.disable_auto_width, { bang = true })
+command('WindowsToggleAutowidth',  M.toggle_auto_width,  { bang = true })
 
 return M
