@@ -44,6 +44,11 @@ WindowsMaximaze		Maximize current window. If the window is already
 			closed while being maximized, then all other windows
 			would be equalized.
 
+			If you want a keymap — `<C-w>z` is a fitting choice:
+>
+		     vim.keymap.set('n', '<C-w>z', '<Cmd>WindowsMaximaze<CR>')
+<
+
 ==============================================================================
 CONFIGURATION
 

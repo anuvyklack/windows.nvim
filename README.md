@@ -52,7 +52,12 @@ Read about plugins configuration in the [documentation](https://github.com/anuvy
   original sizes would restore. If the window will be closed while being
   maximized, then all other windows would be equalized.
 
-## Suggestions
+  If you want a keymap — `<C-w>z` is a fitting choice:
+  ```lua
+  vim.keymap.set('n', '<C-w>z', '<Cmd>WindowsMaximaze<CR>')
+  ```
+
+## Proposals
 
 If you have any proposals, what else can be done with this mechanics, you are
 welcome to open an issue.
