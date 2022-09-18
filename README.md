@@ -1,7 +1,9 @@
 # windows.nvim
 
-- Automatically expand width of the active window with nice animations.
-- Maximize active window.
+- Automatically expand width of the current window;
+- Maximizes and restores the current window.
+
+And all this with nice animations!
 
 https://user-images.githubusercontent.com/13056013/190786962-01047891-38b1-4e87-bd9b-e8eca9acc8b8.mp4
 
@@ -50,3 +52,7 @@ Read about plugins configuration in the [documentation](https://github.com/anuvy
   original sizes would restore. If the window will be closed while being
   maximized, then all other windows would be equalized.
 
+## Suggestions
+
+If you have any proposals, what else can be done with this mechanics, you are
+welcome to open an issue.
