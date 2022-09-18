@@ -9,12 +9,14 @@ https://user-images.githubusercontent.com/13056013/190786962-01047891-38b1-4e87-
 
 ## Installation and setup
 
-This plugin requires [middleclass](https://github.com/anuvyklack/middleclass)
-and [animation.nvim](https://github.com/anuvyklack/animation.nvim) plugins as
-dependencies.
+This plugin requires next dependencies:  
 
-Also recomended to set `'winwidth'`, `'winminwidth'` options to some resonable
-and equal values (values between 5 and 20 will be OK).
+- [middleclass](https://github.com/anuvyklack/middleclass)  
+- [animation.nvim](https://github.com/anuvyklack/animation.nvim) — optional,
+  needed if you want animations
+
+Also, if you enable animations, is recommended to set `winwidth`, `winminwidth`
+options to some reasonable and equal values (between 5 and 20 will be OK).
 
 You can install and setup **windows.nvim** with [packer](https://github.com/wbthomason/packer.nvim)
 plugin manager using next snippet:
