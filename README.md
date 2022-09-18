@@ -16,7 +16,8 @@ This plugin requires next dependencies:
   needed if you want animations
 
 Also, if you enable animations, is recommended to set `winwidth`, `winminwidth`
-options to some reasonable and equal values (between 5 and 20 will be OK).
+options to some reasonable and equal values (between 5 and 20 will be OK), and
+disable `equalalways` option.
 
 You can install and setup **windows.nvim** with [packer](https://github.com/wbthomason/packer.nvim)
 plugin manager using next snippet:
@@ -30,6 +31,7 @@ use { "anuvyklack/windows.nvim",
    config = function()
       vim.o.winwidth = 10
       vim.o.winminwidth = 10
+      vim.o.equalalways = false
       require('windows').setup()
    end
 }
