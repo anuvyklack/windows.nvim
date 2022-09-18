@@ -1,3 +1,6 @@
+---
+--- Singleton
+---
 local util = require('windows.util')
 local animation_is_available, easing = pcall(require, 'animation.easing')
 local initialized = false
@@ -16,7 +19,7 @@ local config = {
    },
    ignore = {
       buftype = { 'quickfix' },
-      filetype = { 'NvimTree', 'neo-tree', 'undotree', 'NeogitStatus' }
+      filetype = { 'undotree', 'gundo', 'NvimTree', 'neo-tree', 'NeogitStatus' }
    },
    animation = {
       enable = true,
