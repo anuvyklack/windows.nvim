@@ -40,8 +40,14 @@ local function setup_autocmds()
       vim.api.nvim_clear_autocmds({ group = augroup })
    end })
 
-   autocmd('WinClosed', { group = augroup, callback = function()
-      cache.restore_maximized = nil
+   autocmd('WinClosed', { group = augroup, callback = function(ctx)
+      ---Id of the closing window.
+      local id = tonumber(ctx.match) --[[@as integer]]
+      local win = Window(id)
+
+      if not win:is_floating() then
+         cache.restore_maximized = nil
+      end
    end })
 end
 
@@ -54,11 +60,15 @@ function M.maximize_curwin()
    autowidth.resizing_requested = false
 
    local wd, hd
+
    if cache.restore_maximized then
       wd = cache.restore_maximized.width or {}
       hd = cache.restore_maximized.height or {}
       cache.restore_maximized = nil
 
+      if not config.autowidth.enable then
+         vim.api.nvim_clear_autocmds({ group = augroup })
+      end
    else
       wd, hd = calculate_layout.maximize_window(curwin)
       if not wd then
@@ -89,6 +99,7 @@ function M.maximize_curwin()
       if not config.autowidth.enable then
          setup_autocmds()
       end
+
    end
 
    local winsdata = merge_resize_data(wd, hd)
