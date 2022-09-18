@@ -65,7 +65,7 @@ require("windows").setup({
    },
    ignore = {				--			|windows.ignore|
       buftype = { "quickfix" },
-      filetype = { "NvimTree", "neo-tree", "undotree", "NeogitStatus" }
+      filetype = { "NvimTree", "neo-tree", "undotree", "gundo" }
    },
    animation = {
       enable = true,

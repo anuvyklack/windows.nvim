@@ -19,7 +19,7 @@ local config = {
    },
    ignore = {
       buftype = { 'quickfix' },
-      filetype = { 'undotree', 'gundo', 'NvimTree', 'neo-tree', 'NeogitStatus' }
+      filetype = { 'undotree', 'gundo', 'NvimTree', 'neo-tree' }
    },
    animation = {
       enable = true,
