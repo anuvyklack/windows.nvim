@@ -1,3 +1,49 @@
+windows.txt							*windows.nvim*
+==============================================================================
+INSTALLATION AND SETUP
+
+This plugin requires plugins as dependencies:
+
+  - middleclass:     https://github.com/anuvyklack/middleclass
+  - animation.nvim:  https://github.com/anuvyklack/animation.nvim
+
+Also recomended to set 'winwidth', 'winminwidth' options to some resonable and
+equal values.
+
+Also recomended to set 'winwidth', 'winminwidth' options to some resonable and
+equal values (values between 5 and 20 will be OK).
+
+You can install and setup |windows.nvim| with |packer.nvim| plugin manager using
+next snippet:
+>
+    use { "anuvyklack/windows.nvim",
+       requires = {
+          "anuvyklack/middleclass",
+          "anuvyklack/animation.nvim"
+       },
+       config = function()
+          vim.o.winwidth = 10
+          vim.o.winminwidth = 10
+          require('windows').setup()
+       end
+    }
+<
+==============================================================================
+COMMANDS						    *windows.commands*
+
+WindowsEnableAutowidth
+WindowsDisableAutowidth
+WindowsToggleAutowidth
+			Enable, disable or toggle auto-width feature.
+
+							   *windows.maximized*
+WindowsMaximaze		Maximize current window. If the window is already
+			maximized, then restore original sizes. When go to
+			another window while current is maximized - all
+			original sizes would restore. If the window will be
+			closed while being maximized, then all other windows
+			would be equalized.
+
 ==============================================================================
 CONFIGURATION
 
@@ -15,12 +61,17 @@ require("windows").setup({
       buftype = { "quickfix" },
       filetype = { "NvimTree", "neo-tree", "undotree", "NeogitStatus" }
    },
-   animation = {			--		     |windows.animation|
+   animation = {
+      enable = true,
       duration = 300,
+      fps = 30,
       easing = "in_out_sine"
    }
 })
 ------------------------------------------------------------------------------
+
+It is recomended to set 'winwidth', 'winminwidth' to some resonable and equal
+values.
 
 autowidth		table				   *windows.autowidth*
 
@@ -58,13 +109,12 @@ ignore			{ `buftype`: string[], `filetype`: string[] }
 		'buftype's and 'filetype's that will be ignored durign
 		resizing.
 
-							   *windows.animation*
-animation		table | `false`
-		If `false` then animation will be disabled.
+animation		table
+		See more info about animation under |animation-plugin| tag.
 
-	duration	integer (milliseconds)
-			default: `300`
-		The duration of the animation in milliseconds.
+	enable		boolean
+			default: `true`
+		If `false` then animation will be disabled.
 
 ------------------------------------------------------------------------------
  vim:ft=help:tw=78:ts=8:noet:norl:
