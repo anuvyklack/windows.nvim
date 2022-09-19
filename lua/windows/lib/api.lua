@@ -22,7 +22,7 @@ function Window:get_wanted_width()
       return self:get_width()
    end
 
-   local buf = self:get_buf()
+   local buf = self:get_buffer()
    local ft = buf:get_option('filetype')
    local w = config.autowidth.filetype[ft] or config.autowidth.winwidth
 
@@ -54,7 +54,7 @@ function Window.__eq(l, r)
 end
 
 ---@return win.Buffer
-function Window:get_buf()
+function Window:get_buffer()
    return M.Buffer(api.nvim_win_get_buf(self.id))
 end
 
@@ -71,7 +71,7 @@ end
 
 ---Should we ignore this window during resizing other windows?
 function Window:is_ignored()
-   local buf = self:get_buf()
+   local buf = self:get_buffer()
    local bt = buf:get_option('buftype')
    local ft = buf:get_option('filetype')
    if config.ignore.buftype[bt] or config.ignore.filetype[ft] then
