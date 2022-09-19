@@ -87,15 +87,6 @@ function ResizeWindowsAnimated:load(winsdata)
          nvim_feedkeys('ze', 'nx', false)
       end
 
-      -- local ok, error = pcall(vim.api.nvim_win_set_cursor, self.curwin.id, { line, col })
-      -- if not ok then
-      --    print(error)
-      --    local win = self.curwin
-      --    P('Window', win.id, 'cursor', win:get_cursor(), 'wanted cursor', { line, col })
-      --    -- print(string.format('Win: %d, cursor: '))
-      --    local buf = win:get_buf()
-      --    P('Buffer', buf.id, buf:get_name())
-
    end)
 end
 

@@ -25,8 +25,6 @@ local config = {
       enable = true,
       duration = 300,
       fps = 30,
-      -- duration = 4000,
-      -- fps = 3,
       easing = 'in_out_sine' ---@diagnostic disable-line
    }
 }

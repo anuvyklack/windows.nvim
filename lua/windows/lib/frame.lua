@@ -535,9 +535,6 @@ function Frame:maximize_window(winLeaf, do_width, do_height)
                   height = height + frame.new_height
                end
             end
-            -- if parentFrame.new_height then
-            --    assert(parentFrame.new_height == height, string.format('parentFrame.new_height (%d) ~= height (%d)', parentFrame.new_height, height))
-            -- end
             parentFrame.new_height = height
          end
 
@@ -566,9 +563,6 @@ function Frame:maximize_window(winLeaf, do_width, do_height)
                   width = width + frame.new_width
                end
             end
-            -- if parentFrame.new_width then
-            --    assert(parentFrame.new_width == width, 'parentFrame.new_width ~= width')
-            -- end
             parentFrame.new_width = width
          end
 
