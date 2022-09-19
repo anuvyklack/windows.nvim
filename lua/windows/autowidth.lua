@@ -63,7 +63,8 @@ function M.enable_auto_width()
    autocmd('BufWinEnter', { group = augroup, callback = function(ctx)
       local win = Window(0) ---@type win.Window
       if win:is_floating()
-         or win:get_type() == 'command' -- in "[Command Line]" window
+         or (new_window and win:is_ignored())
+         or win:get_type() == 'command' -- "[Command Line]" window
       then
          return
       end
@@ -82,7 +83,9 @@ function M.enable_auto_width()
 
    autocmd('WinEnter', { group = augroup, callback = function(ctx)
       local win = Window(0) ---@type win.Window
-      if win:is_floating() or (win == curwin and ctx.buf == curbufnr) then
+      if win:is_floating()
+         or (win == curwin and ctx.buf == curbufnr)
+      then
          return
       end
       curwin = win
