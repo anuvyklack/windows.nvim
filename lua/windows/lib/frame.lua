@@ -8,6 +8,9 @@ local Window = require('windows.lib.api').Window
 local round = require('windows.util').round
 local list_extend = vim.list_extend
 
+---Width threshold
+local THRESHOLD = 1
+
 ---@class win.Frame
 ---@field type 'leaf' | 'col' | 'row'
 ---@field id string
@@ -635,6 +638,16 @@ function Frame:autowidth(curwinLeaf)
       totwincount = totwincount - n
 
       local width = (wanted_width > owed_width) and wanted_width or owed_width
+
+      -- Remove unnecessary windows "breathing", i.e. changing size in few cells.
+      if curwinFrame.type == 'leaf' then
+         local curwin_width = curwin:get_width()
+         if curwin_width - THRESHOLD < width and width <= curwin_width + THRESHOLD
+         then
+            width = curwin_width
+         end
+      end
+
       curwinFrame.new_width = width
       room = room - width - 1
       if curwinFrame.type ~= 'leaf' then
@@ -642,7 +655,7 @@ function Frame:autowidth(curwinLeaf)
       end
 
       ---All children frames that are not curwinFrame and not fixed width.
-      local other_frames = {}
+      local other_frames = {} ---@type win.Frame[]
       for _, frame in ipairs(self.children) do
          if frame ~= curwinFrame and not frame:is_fixed_width() then
             table.insert(other_frames, frame)
@@ -657,6 +670,14 @@ function Frame:autowidth(curwinLeaf)
             local n = #frame:get_longest_row()
             local N = totwincount
             local w = round((room - N + 1) * n / N + n - 1)
+            if frame.type == 'leaf' then
+               -- Remove unnecessary windows "breathing", i.e. changing size in
+               -- few cells.
+               local win_width = frame.win:get_width()
+               if win_width - THRESHOLD < w and w <= win_width + THRESHOLD then
+                  w = win_width
+               end
+            end
             frame.new_width = w
             room = room - w - 1
             totwincount = totwincount - n
