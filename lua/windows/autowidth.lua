@@ -17,7 +17,7 @@ local curbufnr ---@type integer
 
 ---Flag for when a new window has been created.
 ---@type boolean
-local new_window
+local new_window = false
 
 ---To avoid multiple layout resizing in row, when several autocommands were
 ---triggered.
@@ -56,6 +56,7 @@ local function setup_layout()
    else
       resize_windows(winsdata)
    end
+   new_window = false
 end
 
 function M.enable_auto_width()
