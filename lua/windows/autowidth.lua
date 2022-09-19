@@ -19,7 +19,10 @@ local curbufnr ---@type integer
 ---@type boolean
 local new_window
 
-M.resizing_requested = false ---@type boolean
+---To avoid multiple layout resizing in row, when several autocommands were
+---triggered.
+---@type boolean
+M.resizing_requested = false
 
 ---@type win.ResizeWindowsAnimated?
 local animation
@@ -55,13 +58,8 @@ local function setup_layout()
    end
 end
 
----Is resizing deferred?
-local resizing_defered = false
-
 function M.enable_auto_width()
    autocmd('BufWinEnter', { group = augroup, callback = function(ctx)
-      resizing_defered = false
-
       local win = Window(0) ---@type win.Window
       if win:is_floating()
          or win:get_type() == 'command' -- in "[Command Line]" window
@@ -104,13 +102,9 @@ function M.enable_auto_width()
          end
       end
 
-      resizing_defered = true
-      vim.defer_fn(function()
-         if resizing_defered then
-            resizing_defered = false
-            setup_layout()
-         end
-      end, 10)
+      -- Defer resizing to handle the case when a new buffer is opened.
+      -- Then 'BufWinEnter' event will be fired after 'WinEnter'.
+      vim.defer_fn(setup_layout, 10)
    end })
 
    autocmd('WinNew', { group = augroup, callback = function()
