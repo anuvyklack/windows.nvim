@@ -38,7 +38,7 @@ WindowsToggleAutowidth
 			Enable, disable or toggle auto-width feature.
 
 							   *windows.maximized*
-WindowsMaximaze		Maximize current window. If the window is already
+WindowsMaximize		Maximize current window. If the window is already
 			maximized, then restore original sizes. When go to
 			another window while current is maximized - all
 			original sizes would restore. If the window will be
@@ -47,7 +47,7 @@ WindowsMaximaze		Maximize current window. If the window is already
 
 			If you want a keymap — `<C-w>z` is a fitting choice:
 >
-		     vim.keymap.set('n', '<C-w>z', '<Cmd>WindowsMaximaze<CR>')
+		     vim.keymap.set('n', '<C-w>z', '<Cmd>WindowsMaximize<CR>')
 <
 
 ==============================================================================

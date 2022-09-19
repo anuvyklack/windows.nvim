@@ -9,9 +9,9 @@ https://user-images.githubusercontent.com/13056013/190786962-01047891-38b1-4e87-
 
 ## Installation and setup
 
-This plugin requires next dependencies:  
+This plugin requires next dependencies:
 
-- [middleclass](https://github.com/anuvyklack/middleclass)  
+- [middleclass](https://github.com/anuvyklack/middleclass)
 - [animation.nvim](https://github.com/anuvyklack/animation.nvim) — optional,
   needed if you want animations
 
@@ -43,13 +43,13 @@ Read about plugins configuration in the [documentation](https://github.com/anuvy
 
 ## Commands
 
-- `:WindowsEnableAutowidth`  
-  `:WindowsDisableAutowidth`  
+- `:WindowsEnableAutowidth`
+  `:WindowsDisableAutowidth`
   `:WindowsToggleAutowidth`
 
   Enable, disable or toggle auto-width feature.
 
-- `:WindowsMaximaze`		
+- `:WindowsMaximize`
 
   Maximize current window. If the window is already maximized, then restore
   original sizes. When go to another window while current is maximized - all
@@ -58,7 +58,7 @@ Read about plugins configuration in the [documentation](https://github.com/anuvy
 
   If you want a keymap — `<C-w>z` is a fitting choice:
   ```lua
-  vim.keymap.set('n', '<C-w>z', '<Cmd>WindowsMaximaze<CR>')
+  vim.keymap.set('n', '<C-w>z', '<Cmd>WindowsMaximize<CR>')
   ```
 
 ## Proposals
