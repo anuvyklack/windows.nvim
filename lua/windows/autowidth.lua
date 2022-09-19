@@ -80,7 +80,7 @@ function M.enable_auto_width()
    autocmd('VimResized', { group = augroup, callback = function()
       M.resizing_requested = true
       setup_layout()
-    end})
+   end })
 
    autocmd('WinEnter', { group = augroup, callback = function(ctx)
       local win = Window(0) ---@type win.Window
