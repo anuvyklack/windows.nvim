@@ -11,7 +11,7 @@ https://user-images.githubusercontent.com/13056013/190786962-01047891-38b1-4e87-
 
 This plugin requires next dependencies:
 
-- [middleclass](https://github.com/anuvyklack/middleclass)
+- [middleclass](https://github.com/anuvyklack/middleclass)  
 - [animation.nvim](https://github.com/anuvyklack/animation.nvim) — optional,
   needed if you want animations
 
@@ -43,8 +43,8 @@ Read about plugins configuration in the [documentation](https://github.com/anuvy
 
 ## Commands
 
-- `:WindowsEnableAutowidth`
-  `:WindowsDisableAutowidth`
+- `:WindowsEnableAutowidth`  
+  `:WindowsDisableAutowidth`  
   `:WindowsToggleAutowidth`
 
   Enable, disable or toggle auto-width feature.
