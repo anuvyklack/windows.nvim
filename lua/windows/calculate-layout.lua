@@ -38,11 +38,13 @@ function M.autowidth(curwin)
 
    local data = topFrame:get_data_for_width_resizing()
 
+   -- --------------------------------------------------------
    -- local t = {};
    -- for _, d in ipairs(data) do
-   --    t[#t+1] = string.format('%d : %d', d.win.id, d.final_width)
+   --    t[#t+1] = string.format('%d : %d', d.win.id, d.width)
    -- end
    -- print(table.concat(t, ' | '))
+   -- --------------------------------------------------------
 
    return data
 end
