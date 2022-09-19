@@ -112,5 +112,5 @@ function M.maximize_curwin()
    end
 end
 
-command('WindowsMaximaze',  M.maximize_curwin,  { bang = true })
+command('WindowsMaximize',  M.maximize_curwin,  { bang = true })
 
