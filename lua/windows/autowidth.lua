@@ -77,6 +77,11 @@ function M.enable_auto_width()
       setup_layout()
    end })
 
+   autocmd('VimResized', { group = augroup, callback = function()
+      M.resizing_requested = true
+      setup_layout()
+    end})
+
    autocmd('WinEnter', { group = augroup, callback = function(ctx)
       local win = Window(0) ---@type win.Window
       if win:is_floating() or (win == curwin and ctx.buf == curbufnr) then
