@@ -1,7 +1,7 @@
 ---
 --- Singleton
 ---
-local util = require('windows.util')
+local util = require('windows.lib.util')
 local animation_is_available, easing = pcall(require, 'animation.easing')
 local initialized = false
 local mt = {}
