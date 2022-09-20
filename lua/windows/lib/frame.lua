@@ -138,7 +138,7 @@ end
 
 ---@return boolean
 function Frame:is_fixed_height()
-   if self._fixed_height then
+   if self._fixed_height == nil then
       local topFrame = self
       while topFrame.parent do ---@diagnostic disable-line
          topFrame = topFrame.parent
