@@ -15,7 +15,6 @@ function M.autowidth(curwin)
    if topFrame.type == 'leaf' then
       return
    end
-   topFrame:mark_fixed_width()
 
    if curwin:is_valid()
       and not curwin:is_floating()
@@ -57,8 +56,6 @@ function M.maximize_window(curwin)
    if topFrame.type == 'leaf' then
       return
    end
-   topFrame:mark_fixed_width()
-   topFrame:mark_fixed_height()
 
    local curwinLeaf = topFrame:find_window(curwin)
    topFrame:maximize_window(curwinLeaf, true, true)
@@ -78,13 +75,6 @@ function M.equalize_windows(do_width, do_height)
    -- if topFrame.type == 'leaf' then
    --    return
    -- end
-
-   if do_width then
-      topFrame:mark_fixed_width()
-   end
-   if do_height then
-      topFrame:mark_fixed_height()
-   end
 
    topFrame:equalize_windows(do_width, do_height)
 

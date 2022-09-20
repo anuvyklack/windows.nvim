@@ -65,8 +65,7 @@ function Frame.__eq(l, r)
    return l.id == r.id
 end
 
-function Frame:mark_fixed_width()
-   if self._fixed_width ~= nil then return end
+function Frame:_mark_fixed_width()
    if self.type == 'leaf' then
       if self.win:is_ignored() then
          self._fixed_width = true
@@ -78,7 +77,7 @@ function Frame:mark_fixed_width()
       --  The frame is fixed width if all of the frames in the row are fixed width.
       self._fixed_width = true
       for _, frame in ipairs(self.children) do
-         frame:mark_fixed_width()
+         frame:_mark_fixed_width()
          if not frame._fixed_width then
             self._fixed_width = false
          end
@@ -87,7 +86,7 @@ function Frame:mark_fixed_width()
       --  The frame is fixed width if one of the frames in the column is fixed width.
       self._fixed_width = false
       for _, frame in ipairs(self.children) do
-         frame:mark_fixed_width()
+         frame:_mark_fixed_width()
          if frame._fixed_width then
             self._fixed_width = true
          end
@@ -95,8 +94,7 @@ function Frame:mark_fixed_width()
    end
 end
 
-function Frame:mark_fixed_height()
-   if self._fixed_height ~= nil then return end
+function Frame:_mark_fixed_height()
    if self.type == 'leaf' then
       if self.win:is_ignored() then
          self._fixed_height = true
@@ -108,7 +106,7 @@ function Frame:mark_fixed_height()
       --  The frame is fixed height if one of the frames in the row is fixed height.
       self._fixed_height = false
       for _, frame in ipairs(self.children) do
-         frame:mark_fixed_height()
+         frame:_mark_fixed_height()
          if frame._fixed_height then
             self._fixed_height = true
          end
@@ -117,7 +115,7 @@ function Frame:mark_fixed_height()
       --  The frame is fixed height if all of the frames in the column are fixed height.
       self._fixed_height = true
       for _, frame in ipairs(self.children) do
-         frame:mark_fixed_height()
+         frame:_mark_fixed_height()
          if not frame._fixed_height then
             self._fixed_height = false
          end
@@ -127,13 +125,27 @@ end
 
 ---@return boolean
 function Frame:is_fixed_width()
-   assert(self._fixed_width ~= nil, 'Need to call Frame:mark_fixed_width() method first')
+   if self._fixed_width == nil then
+      local topFrame = self
+      while topFrame.parent do ---@diagnostic disable-line
+         topFrame = topFrame.parent
+      end
+      ---@cast topFrame -nil
+      topFrame:_mark_fixed_width()
+   end
    return self._fixed_width
 end
 
 ---@return boolean
 function Frame:is_fixed_height()
-   assert(self._fixed_height ~= nil, 'Need to call Frame:mark_fixed_height() method first')
+   if self._fixed_height then
+      local topFrame = self
+      while topFrame.parent do ---@diagnostic disable-line
+         topFrame = topFrame.parent
+      end
+      ---@cast topFrame -nil
+      topFrame:_mark_fixed_height()
+   end
    return self._fixed_height
 end
 
