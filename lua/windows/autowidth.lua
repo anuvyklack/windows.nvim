@@ -24,7 +24,7 @@ local new_window = false
 ---@type boolean
 M.resizing_requested = false
 
----@type win.ResizeWindowsAnimated?
+---@type win.ResizeWindowsAnimated | nil
 local animation
 if config.animation.enable then
    local ResizeWindowsAnimated = require('windows.lib.resize-windows-animated')

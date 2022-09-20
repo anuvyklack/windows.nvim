@@ -71,9 +71,7 @@ function M.maximize_curwin()
       end
    else
       wd, hd = calculate_layout.maximize_window(curwin)
-      if not wd then
-         return
-      end
+      if not wd then return end
       ---@cast wd -nil
       ---@cast hd -nil
       cache.restore_maximized = {}

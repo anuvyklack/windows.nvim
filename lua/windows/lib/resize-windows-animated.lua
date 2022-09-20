@@ -74,7 +74,6 @@ function ResizeWindowsAnimated:load(winsdata)
 
       if self.cursor_virtcol then
          local width = self.curwin:get_width() - ffi.curwin_col_off()
-         -- local col = (width < self.cursor_virtcol) and width or self.cursor_virtcol
          local col
          if width < self.cursor_virtcol then
             col = width

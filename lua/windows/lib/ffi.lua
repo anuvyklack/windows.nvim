@@ -10,5 +10,3 @@ M.curwin_col_off = ffi.C.curwin_col_off
 
 return M
 
-
-
