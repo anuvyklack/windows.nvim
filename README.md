@@ -23,6 +23,17 @@ You can install and setup **windows.nvim** with [packer](https://github.com/wbth
 plugin manager using next snippet:
 
 ```lua
+-- without animation
+use { "anuvyklack/windows.nvim",
+   requires = {
+      "anuvyklack/middleclass",
+   },
+   config = function()
+      require('windows').setup()
+   end
+}
+
+-- with animation
 use { "anuvyklack/windows.nvim",
    requires = {
       "anuvyklack/middleclass",
