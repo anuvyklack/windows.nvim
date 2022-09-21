@@ -22,31 +22,31 @@ disable `equalalways` option.
 You can install and setup **windows.nvim** with [packer](https://github.com/wbthomason/packer.nvim)
 plugin manager using next snippet:
 
-```lua
--- without animation
-use { "anuvyklack/windows.nvim",
-   requires = {
-      "anuvyklack/middleclass",
-   },
-   config = function()
-      require('windows').setup()
-   end
-}
+- with animation
+  ```lua
+  use { "anuvyklack/windows.nvim",
+     requires = {
+        "anuvyklack/middleclass",
+        "anuvyklack/animation.nvim"
+     },
+     config = function()
+        vim.o.winwidth = 10
+        vim.o.winminwidth = 10
+        vim.o.equalalways = false
+        require('windows').setup()
+     end
+  }
+  ```
 
--- with animation
-use { "anuvyklack/windows.nvim",
-   requires = {
-      "anuvyklack/middleclass",
-      "anuvyklack/animation.nvim"
-   },
-   config = function()
-      vim.o.winwidth = 10
-      vim.o.winminwidth = 10
-      vim.o.equalalways = false
-      require('windows').setup()
-   end
-}
-```
+- without animation
+  ```lua
+  use { "anuvyklack/windows.nvim",
+     requires = "anuvyklack/middleclass",
+     config = function()
+        require('windows').setup()
+     end
+  }
+  ```
 
 ## Configuration
 
