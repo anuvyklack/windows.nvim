@@ -57,7 +57,7 @@ function M.maximize_curwin()
       return
    end
 
-   autowidth.resizing_requested = false
+   autowidth.resizing_request = false
 
    local wd, hd
 

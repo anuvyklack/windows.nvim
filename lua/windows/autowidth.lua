@@ -22,7 +22,7 @@ local new_window = false
 ---To avoid multiple layout resizing in row, when several autocommands were
 ---triggered.
 ---@type boolean
-M.resizing_requested = false
+M.resizing_request = false
 
 ---@type win.ResizeWindowsAnimated | nil
 local animation
@@ -32,10 +32,10 @@ if config.animation.enable then
 end
 
 local function setup_layout()
-   if not curwin or not M.resizing_requested then
+   if not curwin or not M.resizing_request then
       return
    end
-   M.resizing_requested = false
+   M.resizing_request = false
 
    local winsdata = calculate_layout.autowidth(curwin)
    if not winsdata then return end
@@ -70,14 +70,14 @@ function M.enable_auto_width()
       end
       cache.cursor_virtcol[curwin] = nil
 
-      M.resizing_requested = true
+      M.resizing_request = true
 
       curbufnr = ctx.buf
       setup_layout()
    end })
 
    autocmd('VimResized', { group = augroup, callback = function()
-      M.resizing_requested = true
+      M.resizing_request = true
       setup_layout()
    end })
 
@@ -90,7 +90,7 @@ function M.enable_auto_width()
       end
       curwin = win
 
-      M.resizing_requested = true
+      M.resizing_request = true
 
       if animation then
          local virtcol = cache.cursor_virtcol[curwin]
