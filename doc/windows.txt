@@ -50,8 +50,7 @@ COMMANDS						      *windows.commands*
 			as |CTRL-W__| but with animation.
 
 							      *windows.equalize*
-:WindowsEqualize
-			Equalize all windows heights and widths width animation.
+:WindowsEqualize	Equalize all windows heights and widths width animation.
 			See |CTRL-W_=|
 
 WindowsEnableAutowidth

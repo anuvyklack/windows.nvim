@@ -64,7 +64,7 @@ Read about plugins configuration in the [documentation](https://github.com/anuvy
 - `:WindowsMaximizeVertically`
 
   Maximize width of the current window. Almost the same as `:vertical resize`
-  (see `:help CTRL-W_bar'`) but with animation.
+  (see `:help CTRL-W_bar`) but with animation.
 
 - `:WindowsMaximizeHorizontally`
 
