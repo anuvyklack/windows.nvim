@@ -59,7 +59,8 @@ local function setup_layout()
    new_window = false
 end
 
-function M.enable_auto_width()
+---Enable autowidth
+function M.enable()
    autocmd('BufWinEnter', { group = augroup, callback = function(ctx)
       local win = Window(0) ---@type win.Window
       if win:is_floating()
@@ -142,22 +143,24 @@ function M.enable_auto_width()
    end
 end
 
-function M.disable_auto_width()
+---Disable autowidth
+function M.disable()
    api.nvim_clear_autocmds({ group = augroup })
 end
 
-function M.toggle_auto_width()
+---Toggle autowidth
+function M.toggle()
    if config.autowidth.enable then
-      M.disable_auto_width()
+      M.disable()
       config.autowidth.enable = false
    else
-      M.enable_auto_width()
+      M.enable()
       config.autowidth.enable = true
    end
 end
 
-command('WindowsEnableAutowidth',  M.enable_auto_width,  { bang = true })
-command('WindowsDisableAutowidth', M.disable_auto_width, { bang = true })
-command('WindowsToggleAutowidth',  M.toggle_auto_width,  { bang = true })
+command('WindowsEnableAutowidth',  M.enable,  { bang = true })
+command('WindowsDisableAutowidth', M.disable, { bang = true })
+command('WindowsToggleAutowidth',  M.toggle,  { bang = true })
 
 return M
