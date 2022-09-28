@@ -1,8 +1,15 @@
 local cache = {
    buffer = {},
+
+   ---The screen column number of the cursor of the active window.
    cursor_virtcol = {},
-   virtualedit = {}, ---@type { win: win.Window, value: integer }
-   restore_maximized = nil
+
+   ---@type { win: win.Window, value: integer }
+   virtualedit = {},
+
+   ---The original widths' and heights' data of the windows to restore later.
+   ---@type { width: win.WinResizeData[], height: win.WinResizeData[] }
+   maximized = nil
 }
 
 local mt = {

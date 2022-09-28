@@ -7,6 +7,7 @@ local ffi = require('windows.lib.ffi')
 local Window = require('windows.lib.api').Window
 local resize_windows = require('windows.lib.resize-windows').resize_windows
 local merge_resize_data = require('windows.lib.resize-windows').merge_resize_data
+local tbl_is_empty = vim.tbl_isempty
 local autocmd = vim.api.nvim_create_autocmd
 local augroup = vim.api.nvim_create_augroup('windows.autowidth', {})
 local command = vim.api.nvim_create_user_command
@@ -37,18 +38,16 @@ local function setup_layout()
    end
    M.resizing_request = false
 
-   local winsdata = calculate_layout.autowidth(curwin)
-   if not winsdata then return end
+   local winsdata = calc_layout.autowidth(curwin)
+   if tbl_is_empty(winsdata) then return end
 
-   if cache.restore_maximized then
-      local height_data
-      if new_window then
-         height_data = calculate_layout.equalize_windows(false, true)
-      else
-         height_data = cache.restore_maximized.height
+   if cache.maximized then
+      if cache.maximized.height then
+         local height_data = new_window and calc_layout.equalize_wins(false, true)
+                             or cache.maximized.height
+         winsdata = merge_resize_data(winsdata, height_data)
       end
-      winsdata = merge_resize_data(winsdata, height_data)
-      cache.restore_maximized = nil
+      cache.maximized = nil
    end
    new_window = false
 

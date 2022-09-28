@@ -9,11 +9,11 @@ local M = {}
 
 ---Calculate layout for auotwidth
 ---@param curwin win.Window
----@return win.WinResizeData[] | nil
+---@return win.WinResizeData[]
 function M.autowidth(curwin)
    local topFrame = Frame() ---@type win.Frame
    if topFrame.type == 'leaf' then
-      return
+      return {}
    end
 
    if curwin:is_valid()
@@ -48,17 +48,19 @@ function M.autowidth(curwin)
    return data
 end
 
----@param curwin win.Window
----@return win.WinResizeData[] | nil width
----@return win.WinResizeData[] | nil height
-function M.maximize_window(curwin)
+---@param win win.Window
+---@param do_width boolean
+---@param do_height boolean
+---@return win.WinResizeData[] width
+---@return win.WinResizeData[] height
+function M.maximize_win(win, do_width, do_height)
    local topFrame = Frame() ---@type win.Frame
    if topFrame.type == 'leaf' then
-      return
+      return {}, {}
    end
 
-   local curwinLeaf = topFrame:find_window(curwin)
-   topFrame:maximize_window(curwinLeaf, true, true)
+   local winLeaf = topFrame:find_window(win)
+   topFrame:maximize_window(winLeaf, do_width, do_height)
 
    local width_data = topFrame:get_data_for_width_resizing()
    local height_data = topFrame:get_data_for_height_resizing()
@@ -69,23 +71,25 @@ end
 ---@param do_width boolean
 ---@param do_height boolean
 ---@return win.WinResizeData[]
-function M.equalize_windows(do_width, do_height)
+function M.equalize_wins(do_width, do_height)
    assert(do_width or do_height, 'No arguments have been passed')
    local topFrame = Frame() ---@type win.Frame
-   -- if topFrame.type == 'leaf' then
-   --    return
-   -- end
+   if topFrame.type == 'leaf' then
+      return {}
+   end
 
    topFrame:equalize_windows(do_width, do_height)
 
+   local data
    if do_width and not do_height then
-      return topFrame:get_data_for_width_resizing()
+      data = topFrame:get_data_for_width_resizing()
    elseif not do_width and do_height then
-      return topFrame:get_data_for_height_resizing()
+      data = topFrame:get_data_for_height_resizing()
    else
-      return merge_resize_data(topFrame:get_data_for_width_resizing(),
+      data = merge_resize_data(topFrame:get_data_for_width_resizing(),
                                topFrame:get_data_for_height_resizing())
    end
+   return data
 end
 
 return M
