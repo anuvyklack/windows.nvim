@@ -1,18 +1,18 @@
-local calculate_layout = require('windows.calculate-layout')
-local resize_windows = require('windows.lib.resize-windows').resize_windows
-local merge_resize_data = require('windows.lib.resize-windows').merge_resize_data
-local Window = require('windows.lib.api').Window
+local api = vim.api
+local fn = vim.fn
+local calc_layout = require('windows.calculate-layout')
 local config = require('windows.config')
 local cache = require('windows.cache')
 local ffi = require('windows.lib.ffi')
-local fn = vim.fn
-local api = vim.api
+local Window = require('windows.lib.api').Window
+local resize_windows = require('windows.lib.resize-windows').resize_windows
+local merge_resize_data = require('windows.lib.resize-windows').merge_resize_data
 local autocmd = vim.api.nvim_create_autocmd
 local augroup = vim.api.nvim_create_augroup('windows.autowidth', {})
 local command = vim.api.nvim_create_user_command
 local M = {}
 
-local curwin ---@type win.Window
+local curwin   ---@type win.Window
 local curbufnr ---@type integer
 
 ---Flag for when a new window has been created.
@@ -50,13 +50,14 @@ local function setup_layout()
       winsdata = merge_resize_data(winsdata, height_data)
       cache.restore_maximized = nil
    end
+   new_window = false
+
    if animation then
       animation:load(winsdata)
       animation:run()
    else
       resize_windows(winsdata)
    end
-   new_window = false
 end
 
 ---Enable autowidth
@@ -99,7 +100,10 @@ function M.enable()
             local leftcol = fn.winsaveview().leftcol
             local width = curwin:get_width() - ffi.curwin_col_off()
             if leftcol == 0 and width < virtcol then
-               cache.virtualedit = { win = curwin, value = curwin:get_option('virtualedit') }
+               cache.virtualedit = {
+                  win = curwin,
+                  value = curwin:get_option('virtualedit')
+               }
                curwin:set_option('virtualedit', 'all')
                api.nvim_feedkeys(width..'|', 'nx', false)
                fn.winrestview({ leftcol = 0 })
