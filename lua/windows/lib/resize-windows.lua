@@ -5,10 +5,16 @@ local M = {}
 ---@field width integer
 ---@field height integer
 
+---Modifies the `width_data` table!
 ---@param width_data win.WinResizeData[]
 ---@param height_data win.WinResizeData[]
 function M.merge_resize_data(width_data, height_data)
-   local r = vim.deepcopy(width_data) ---@type win.WinResizeData[]
+   if vim.tbl_isempty(height_data) then
+      return width_data
+   end
+   -- ---@type win.WinResizeData[]
+   -- local r = vim.deepcopy(width_data)
+   local r = width_data
    local id = {}
    for i, d in ipairs(width_data) do
       id[d.win.id] = i
