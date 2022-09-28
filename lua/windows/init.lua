@@ -15,7 +15,7 @@ function M.setup(input)
       require('windows.autowidth').enable()
    end
 
-   require('windows.maximize-window')
+   require('windows.commands')
 end
 
 return M
