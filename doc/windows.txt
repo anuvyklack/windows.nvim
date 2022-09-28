@@ -7,7 +7,7 @@ This plugin requires plugins as dependencies:
   - middleclass:	https://github.com/anuvyklack/middleclass
 
   - animation.nvim:	https://github.com/anuvyklack/animation.nvim
-			Optional, needed if you want animations.
+			Optional: needed if you want animations.
 
 Also, if you enable animations, is recommended to set 'winwidth', 'winminwidth'
 options to some reasonable and equal values (between 5 and 20 will be OK), and
@@ -32,24 +32,47 @@ next snippet:
 ================================================================================
 COMMANDS						      *windows.commands*
 
+							      *windows.maximize*
+:WindowsMaximize	Maximize current window. If the window is already
+			maximized, then restore original sizes. When go to
+			another window while current is maximized - will be
+			restored. If the window will be closed while being
+			maximized, then all other windows would be equalized.
+
+						   *windows.maximize-vertically*
+:WindowsMaximizeVertically
+			Maximize width of the current window. Almost the same as
+			|CTRL-W_bar| but with animation.
+
+						 *windows.maximize-horizontally*
+:WindowsMaximizeHorizontally
+			Maximize height of the current window. Almost the same
+			as |CTRL-W__| but with animation.
+
+							      *windows.equalize*
+:WindowsEqualize
+			Equalize all windows heights and widths width animation.
+			See |CTRL-W_=|
+
 WindowsEnableAutowidth
 WindowsDisableAutowidth
 WindowsToggleAutowidth
 			Enable, disable or toggle auto-width feature.
 
-							     *windows.maximized*
-WindowsMaximize		Maximize current window. If the window is already
-			maximized, then restore original sizes. When go to
-			another window while current is maximized - all original
-			sizes would restore. If the window will be closed while
-			being maximized, then all other windows would be
-			equalized.
+--------------------------------------------------------------------------------
+KEYMAPINGS
 
-			If you want a keymap — `<C-w>z` is a fitting choice:
+If you want a keymaps thees are a fitting choice:
 >
-		       vim.keymap.set('n', '<C-w>z', '<Cmd>WindowsMaximize<CR>')
-<
+    local function cmd(command)
+       return table.concat({ '<Cmd>', command, '<CR>' })
+    end
 
+    vim.keymap.set('n', '<C-w>z', cmd 'WindowsMaximize')
+    vim.keymap.set('n', '<C-w>_', cmd 'WindowsMaximizeVertically')
+    vim.keymap.set('n', '<C-w>|', cmd 'WindowsMaximizeHorizontally')
+    vim.keymap.set('n', '<C-w>=', cmd 'WindowsEqualize')
+<
 ================================================================================
 CONFIGURATION
 
@@ -83,11 +106,11 @@ autowidth		table				     *windows.autowidth*
 
 	enable		boolean
 			default: `true`
-			parent: `autowidth`
+			parent table: `autowidth`
 							      *windows.winwidth*
 	winwidth	number
 			default: `5`
-			parent: `autowidth`
+			parent table: `autowidth`
 		0 < n < 1   The value between 0 to 1 will be considered as the
 			    fraction of the totall Vim window width.
 
@@ -100,7 +123,6 @@ autowidth		table				     *windows.autowidth*
 			    'textwidth'.  If 'textwidth' is 0, assumed to 80.
 			    For example: `winwidth = 5` set split width to
 			    `&textwidth + 5`
-
 						    *windows.autowidth.filetype*
 	filetype	table<string, number>
 		Allow to set |windows.winwidth| per 'filetype' specific.
@@ -114,7 +136,7 @@ animation		table
 
 	enable		boolean
 			default: `true`
-			parent: `animation`
+			parent table: `animation`
 		If `false` then animation will be disabled.
 
 --------------------------------------------------------------------------------
