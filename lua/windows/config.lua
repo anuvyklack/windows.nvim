@@ -19,7 +19,11 @@ local config = {
    },
    ignore = {
       buftype = { 'quickfix' },
-      filetype = { 'undotree', 'gundo', 'NvimTree', 'neo-tree' }
+      filetype = {
+         'undotree', 'gundo',
+         'NvimTree', 'neo-tree',
+         'Outline' -- simrat39/symbols-outline.nvim
+      }
    },
    animation = {
       enable = true,
