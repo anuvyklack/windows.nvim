@@ -719,13 +719,11 @@ end
 ---Extract the list of windows suitable for width resizing.
 ---@return win.Frame[]
 function Frame:get_leafs_for_width_resizing()
-   if self.type == 'leaf' then
-      -- We get here only if root has only one "leaf" frame
-      return { self }
-   elseif self.type == 'row' then
-      local r = {}
+   local r = {}
+   if self.type == 'row' then
       local N = #self.children
       local add_last
+
       for i, frame in ipairs(self.children) do
          if i < N or add_last then
             local f = frame:get_direct_child_leaf()
@@ -741,30 +739,27 @@ function Frame:get_leafs_for_width_resizing()
          end
       end
 
-      return r
-   else -- self.type == 'col'
-      local r = {}
-
+   elseif self.type == 'col' then
       for _, frame in ipairs(self.children) do
          if frame.type ~= 'leaf' then
             list_extend(r, frame:get_leafs_for_width_resizing())
          end
       end
-
-      return r
+   else -- self.type == 'leaf'
+      -- We get here only if root has only one "leaf" frame
+      return { self }
    end
+   return r
 end
 
 ---Extract the list of windows suitable for height resizing.
 ---@return win.Frame[]
 function Frame:get_leafs_for_height_resizing()
-   if self.type == 'leaf' then
-      -- We get here only if root has only one "leaf" frame
-      return { self }
-   elseif self.type == 'col' then
-      local r = {}
+   local r = {}
+   if self.type == 'col' then
       local N = #self.children
       local add_last
+
       for i, frame in ipairs(self.children) do
          if i < N or add_last then
             local f = frame:get_direct_child_leaf()
@@ -780,18 +775,17 @@ function Frame:get_leafs_for_height_resizing()
          end
       end
 
-      return r
-   else -- self.type == 'row'
-      local r = {}
-
+   elseif self.type == 'row' then
       for _, frame in ipairs(self.children) do
          if frame.type ~= 'leaf' then
             list_extend(r, frame:get_leafs_for_height_resizing())
          end
       end
-
-      return r
+   else -- self.type == 'leaf'
+      -- We get here only if root has only one "leaf" frame
+      return { self }
    end
+   return r
 end
 
 --------------------------------------------------------------------------------
