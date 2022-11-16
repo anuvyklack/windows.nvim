@@ -42,9 +42,7 @@ function mt:__call(input)
    util.convert_list_to_set(config.ignore.buftype)
    util.convert_list_to_set(config.ignore.filetype)
    if config.animation.enable and animation_is_available then
-      if not config.animation.easing
-         or type(config.animation.easing) == 'string'
-      then
+      if type(config.animation.easing) == 'string' then
          local name = config.animation.easing
          config.animation.easing = easing[name]
       end
