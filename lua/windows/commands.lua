@@ -75,7 +75,7 @@ function M.maximize()
       end
    else
       wd, hd = calc_layout.maximize_win(curwin, true, true)
-      if tbl_is_empty(wd) then return end
+      if tbl_is_empty(wd) and tbl_is_empty(hd) then return end
 
       cache.maximized = { width = {}, height = {} }
 
@@ -92,7 +92,7 @@ function M.maximize()
          }
       end
 
-      if not config.autowidth.enable then
+      if not config.autowidth.enable or tbl_is_empty(wd) then
          setup_autocmds()
       end
    end
@@ -131,9 +131,7 @@ function M.maximize_vertically()
          }
       end
 
-      if not config.autowidth.enable then
-         setup_autocmds()
-      end
+      setup_autocmds()
    end
 
    if animation then
