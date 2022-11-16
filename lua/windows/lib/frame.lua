@@ -1,5 +1,5 @@
 ---
---- Everywhere where you see something like: "n - 1", "-n  + 1" or "-1", this
+--- Everywhere where you see something like: "n - 1", "-n + 1" or "-1", this
 --- is a subtraction of the width of separators between children frames from
 --- frame width.
 ---

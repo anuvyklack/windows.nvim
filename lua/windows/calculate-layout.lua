@@ -1,8 +1,3 @@
----
---- Everywhere where you see something like: "n-1", "-n +1" or "-1", this
---- is a subtraction of the width of separators between children frames from
---- frame width.
----
 local Frame = require('windows.lib.frame')
 local merge_resize_data = require('windows.lib.resize-windows').merge_resize_data
 local M = {}
