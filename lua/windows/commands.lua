@@ -107,9 +107,8 @@ function M.maximize()
    end
 end
 
----Maximize current window verticaly.
----@See CTRL-W_bar
-function M.maximize_verticaly()
+---Maximize current window vertically. See :help CTRL-W_bar
+function M.maximize_vertically()
    ---@type win.Window
    local curwin = Window()
    if curwin:is_floating() then return end
@@ -204,9 +203,18 @@ function M.equalize()
 end
 
 command('WindowsMaximize', M.maximize, { bang = true })
-command('WindowsMaximizeVertically', M.maximize_verticaly, { bang = true })
+command('WindowsMaximizeVertically', M.maximize_vertically, { bang = true })
 command('WindowsMaximizeHorizontally', M.maximize_horizontally, { bang = true })
 command('WindowsEqualize', M.equalize, { bang = true })
+
+--------------------------------------------------------------------------------
+
+function M. maximize_verticaly()
+   vim.notify('[windows.nvim] WindowsMaximizeVerticaly command has been renamed to WindowsMaximizeVerticaly (added a second missing "l" in the word "vertically")',
+              vim.log.levels.WARN)
+end
+
+command('WindowsMaximizeVerticaly', M.maximize_verticaly, { bang = true })
 
 return M
 
