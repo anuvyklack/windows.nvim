@@ -208,7 +208,7 @@ command('WindowsEqualize', M.equalize, { bang = true })
 --------------------------------------------------------------------------------
 
 function M. maximize_verticaly()
-   vim.notify('[windows.nvim] WindowsMaximizeVerticaly command has been renamed to WindowsMaximizeVerticaly (added a second missing "l" in the word "vertically")',
+   vim.notify('[windows.nvim] WindowsMaximizeVerticaly command has been renamed to WindowsMaximizeVertically (added a second missing "l" in the word "vertically")',
               vim.log.levels.WARN)
 end
 
