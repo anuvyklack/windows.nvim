@@ -114,6 +114,12 @@ function Window:restore_changed_options()
    self._original_options = nil
 end
 
+---The width of offset of the window, occupied by line number column,
+---fold column and sign column.
+---@return integer
+function Window:get_text_offset()
+  return fn.getwininfo(self.id)[1].textoff
+end
 ---@return integer
 function Window:get_width()
    return api.nvim_win_get_width(self.id)

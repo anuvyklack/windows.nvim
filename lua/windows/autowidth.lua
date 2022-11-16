@@ -3,7 +3,6 @@ local fn = vim.fn
 local calc_layout = require('windows.calculate-layout')
 local config = require('windows.config')
 local cache = require('windows.cache')
-local ffi = require('windows.lib.ffi')
 local Window = require('windows.lib.api').Window
 local resize_windows = require('windows.lib.resize-windows').resize_windows
 local merge_resize_data = require('windows.lib.resize-windows').merge_resize_data
@@ -97,7 +96,7 @@ function M.enable()
          local virtcol = cache.cursor_virtcol[curwin]
          if virtcol then
             local leftcol = fn.winsaveview().leftcol
-            local width = curwin:get_width() - ffi.curwin_col_off()
+            local width = curwin:get_width() - curwin:get_text_offset()
             if leftcol == 0 and width < virtcol then
                cache.virtualedit = {
                   win = curwin,
@@ -125,7 +124,7 @@ function M.enable()
          if not win:is_floating() and not win:is_ignored()
             and not animation:is_running()
          then
-            cache.cursor_virtcol[win] = fn.wincol() - ffi.curwin_col_off()
+            cache.cursor_virtcol[win] = fn.wincol() - win:get_text_offset()
          end
       end })
 

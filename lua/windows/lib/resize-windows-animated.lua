@@ -6,7 +6,6 @@ local Animation = require('animation')
 local Window = require('windows.lib.api').Window
 local cache = require('windows.cache')
 local round = require('windows.lib.util').round
-local ffi = require('windows.lib.ffi')
 local nvim_feedkeys = vim.api.nvim_feedkeys
 local winsaveview = vim.fn.winsaveview
 
@@ -73,7 +72,7 @@ function ResizeWindowsAnimated:load(winsdata)
       end
 
       if self.cursor_virtcol then
-         local width = self.curwin:get_width() - ffi.curwin_col_off()
+         local width = self.curwin:get_width() - self.curwin:get_text_offset()
          local col
          if width < self.cursor_virtcol then
             col = width
