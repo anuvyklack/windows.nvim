@@ -80,16 +80,14 @@ function M.equalize_wins(do_width, do_height)
 
    topFrame:equalize_windows(do_width, do_height)
 
-   local data
    if do_width and not do_height then
-      data = topFrame:get_data_for_width_resizing()
+      return topFrame:get_data_for_width_resizing()
    elseif not do_width and do_height then
-      data = topFrame:get_data_for_height_resizing()
+      return topFrame:get_data_for_height_resizing()
    else
-      data = merge_resize_data(topFrame:get_data_for_width_resizing(),
+      return merge_resize_data(topFrame:get_data_for_width_resizing(),
                                topFrame:get_data_for_height_resizing())
    end
-   return data
 end
 
 return M
