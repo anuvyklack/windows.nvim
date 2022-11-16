@@ -120,6 +120,7 @@ end
 function Window:get_text_offset()
   return fn.getwininfo(self.id)[1].textoff
 end
+
 ---@return integer
 function Window:get_width()
    return api.nvim_win_get_width(self.id)
@@ -164,10 +165,6 @@ end
 ---@param r win.Buffer
 function Buffer.__eq(l, r)
    return l.id == r.id
-end
-
-function Buffer:get_name(name)
-   return api.nvim_buf_get_name(self.id)
 end
 
 ---@param name string
