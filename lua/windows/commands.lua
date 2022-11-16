@@ -24,8 +24,7 @@ local function setup_autocmds()
    augroup = api.nvim_create_augroup(augroup_name, {})
 
    autocmd('WinEnter', { group = augroup, callback = function()
-      local curwin = Window()
-      if curwin:is_floating() then return end
+      if Window():is_floating() then return end
 
       api.nvim_clear_autocmds({ group = augroup })
 
@@ -50,10 +49,8 @@ local function setup_autocmds()
 
    autocmd('WinClosed', { group = augroup, callback = function(ctx)
       ---Id of the closing window.
-      local id = tonumber(ctx.match) --[[@as integer]]
-      local win = Window(id)
-
-      if not win:is_floating() then
+      local id = tonumber(ctx.match)
+      if not Window(id):is_floating() then
          cache.maximized = nil
       end
    end })
@@ -73,7 +70,6 @@ function M.maximize()
       wd = cache.maximized.width or {}
       hd = cache.maximized.height or {}
       cache.maximized = nil
-
       if not config.autowidth.enable then
          api.nvim_clear_autocmds({ group = augroup })
       end
@@ -81,27 +77,20 @@ function M.maximize()
       wd, hd = calc_layout.maximize_win(curwin, true, true)
       if tbl_is_empty(wd) then return end
 
-      cache.maximized = {}
+      cache.maximized = { width = {}, height = {} }
 
-      local width_cache = {}
       for i, d in ipairs(wd) do
-         local win = d.win
-         width_cache[i] = {
-            win = win,
-            width = win:get_width()
+         cache.maximized.width[i] = {
+            win = d.win,
+            width = d.win:get_width()
          }
       end
-      cache.maximized.width = width_cache
-
-      local height_cache = {}
       for i, d in ipairs(hd) do
-         local win = d.win
-         height_cache[i] = {
-            win = win,
-            height = win:get_height()
+         cache.maximized.height[i] = {
+            win = d.win,
+            height = d.win:get_height()
          }
       end
-      cache.maximized.height = height_cache
 
       if not config.autowidth.enable then
          setup_autocmds()
@@ -134,16 +123,14 @@ function M.maximize_verticaly()
       if tbl_is_empty(winsdata) then return end
 
       cache.maximized = cache.maximized or {}
+      cache.maximized.height = cache.maximized.height or {}
 
-      local height_cache = {}
       for i, d in ipairs(winsdata) do
-         local win = d.win
-         height_cache[i] = {
-            win = win,
-            height = win:get_height()
+         cache.maximized.height[i] = {
+            win = d.win,
+            height = d.win:get_height()
          }
       end
-      cache.maximized.height = height_cache
 
       if not config.autowidth.enable then
          setup_autocmds()
@@ -158,8 +145,7 @@ function M.maximize_verticaly()
    end
 end
 
----Maximize current window horizontally.
----@See CTRL-W__
+---Maximize current window horizontally. See :help CTRL-W__
 function M.maximize_horizontally()
    ---@type win.Window
    local curwin = Window()
@@ -174,16 +160,14 @@ function M.maximize_horizontally()
       if tbl_is_empty(winsdata) then return end
 
       cache.maximized = cache.maximized or {}
+      cache.maximized.width = cache.maximized.width or {}
 
-      local width_cache = {}
       for i, d in ipairs(winsdata) do
-         local win = d.win
-         width_cache[i] = {
-            win = win,
-            width = win:get_width()
+         cache.maximized.width[i] = {
+            win = d.win,
+            width = d.win:get_width()
          }
       end
-      cache.maximized.width = width_cache
 
       if not config.autowidth.enable then
          setup_autocmds()
@@ -203,9 +187,7 @@ end
 ---Equalize all windows heights and widths.
 ---@See CTRL-W_=
 function M.equalize()
-   ---@type win.Window
-   local curwin = Window()
-   if curwin:is_floating() then return end
+   if Window():is_floating() then return end
 
    cache.maximized = nil
    autowidth.resizing_request = false
