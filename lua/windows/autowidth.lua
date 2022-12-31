@@ -84,6 +84,7 @@ function M.enable()
    autocmd('WinEnter', { group = augroup, callback = function(ctx)
       local win = Window(0) ---@type win.Window
       if win:is_floating()
+         or win:is_ignored()
          or (win == curwin and ctx.buf == curbufnr)
       then
          return
