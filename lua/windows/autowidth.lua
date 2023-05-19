@@ -65,6 +65,7 @@ function M.enable()
       if win:is_floating()
          or (new_window and win:is_ignored())
          or win:get_type() == 'command' -- "[Command Line]" window
+         or win:get_type() == ''
       then
          return
       end
