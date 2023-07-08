@@ -84,7 +84,7 @@ Read about plugins configuration in the [documentation](https://github.com/anuvy
 
 ## Keymapings
 
-If you want a keymaps thees are a fitting choice:
+If you want a keymaps these are a fitting choice:
 
 ```lua
 local function cmd(command)
